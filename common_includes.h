@@ -1,6 +1,8 @@
 #ifndef COMMON_INCLUDES_H
 #define COMMON_INCLUDES_H
 
+#include "stdint.h"
+
 #if defined _WIN32 || defined __CYGWIN__
   #ifdef DLL_EXPORT
     // Exporting...
@@ -30,9 +32,46 @@
 
 enum eRes
 {
+	eERR_VERSION = -3,
+	eERR_ALREADYINUSE = -2,
 	eERR_FAIL = -1,
 	eOK = 0,
 	eUnknown
+};
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+	struct S_Version
+	{
+		int iMajor;
+		int iMinor;
+	};
+
+	struct I_PMS_V01
+	{
+		S_Version sVersion;
+
+		eRes (*Attach)(void* iGuest, S_Version guestVersion, S_Version minRequiredHostVersion);
+		void (*Detach)(void* iGuest);
+		void (*RegisterHostDetach)(void (*HostIsDetaching)(void* iHost));
+
+		void (*GetModuleName)(const wchar_t * sName);
+		void (*Call)(const wchar_t * sModule, const wchar_t * sCommand, void* data, int iParam);
+		void (*GetCallList)(const wchar_t* sModule, const wchar_t* sCommand, const wchar_t** sCommands, uint32_t& uiCount);
+
+		//version Info:
+		//1.0 This initial version
+	};
+
+#ifdef __cplusplus
+} // extern "C"
+#endif // _cplusplus
+
+class I_CommonBase
+{
+	virtual int CommonBaseFunction() = 0;
 };
 
 #endif // !COMMON_INCLUDES_H

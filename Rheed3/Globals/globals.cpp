@@ -8,20 +8,28 @@
 #include <QTime>
 
 //logger
-#include <sys/stat.h>
+#include <filesystem>
 #include <ios>
 #include <ctime>
 #include <chrono>
 #include <cmath>
 #include <sstream>
 
+
 #ifdef _DEBUG
     #include <QDebug>
 #endif
 
+#ifdef _WIN32
+#include <windows.h>
+#endif // _WIN32
+
+
+
+
 C_globals::C_globals()
 {
-
+	m_sGlobalPath = QDir::currentPath();
 }
 
 C_globals & C_globals::getInstance()
@@ -131,6 +139,27 @@ void C_globals::Save()
     }
 }
 
+void C_globals::GetCameraPluginPath(QString& sPath)
+{
+	QString sLoacalPath = m_sGlobalPath;
+	QString sCamera = m_sCameraPluginPath;
+	if (sCamera.contains("/"))
+		sCamera = sCamera.right(sCamera.length() - sCamera.lastIndexOf("/")-1);
+	if (sCamera.contains("\\"))
+		sCamera = sCamera.right(sCamera.length() - sCamera.lastIndexOf("\\")-1);
+	if (!sLoacalPath.endsWith("/"))
+		sLoacalPath.append("/");
+	sLoacalPath.append(sCamera);
+	sPath = sLoacalPath;
+}
+
+void C_globals::GetCameraPluginPath(std::wstring& Path)
+{
+	QString sqPath;
+	GetCameraPluginPath(sqPath);
+	Path = sqPath.toStdWString();
+}
+
 void C_globals::setupLogger()
 {
     m_pLogger = &C_logger::getInstance();
@@ -159,11 +188,11 @@ void C_globals::setupLogger()
                 break;
             }
         }
-        if (!m_pLogger->init(sFileName.toStdString()))
+        if (!m_pLogger->init(sFileName.toStdWString()))
             m_pLogger = nullptr;
         if (m_pLogger)
         {
-            m_pLogger->logMsg("RHEED3 program started, initiating log.");
+            m_pLogger->logMsg(L"RHEED3 program started, initiating log.");
         }
 
     }
@@ -232,32 +261,32 @@ void C_logger::work(C_logger *pThis)
     }while (pThis->m_bRun);
 }
 
-bool C_logger::init(std::string sFileName)
+bool C_logger::init(std::wstring sFileName)
 {
-    struct stat buffer;
-    if ( stat( sFileName.c_str(), &buffer) == 0)
-    {
-        return false;
-    }
-    m_sFileName = sFileName;
-    m_file.open(m_sFileName, std::ios::in | std::ios::app);
-    if (m_file.good())
-    {
-        m_pworkThread = new std::thread(work, this);
-        return true;
-    }
-    else
-    {
-        return false;
-    }
+	if (!std::filesystem::exists(sFileName))
+	{
+		m_sFileName = sFileName;
+		m_file.open(m_sFileName, std::ios::in | std::ios::app);
+		if (m_file.good())
+		{
+			m_pworkThread = new std::thread(work, this);
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	}
+	else
+		return false;
 }
 
-void C_logger::logMsg(std::string sMsg)
+void C_logger::logMsg(std::wstring sMsg)
 {
     if (sMsg.empty() || !m_bRun)
         return;
     //std::string sCompleteMsg;
-    std::stringstream sMsgStream;
+    std::wstringstream sMsgStream;
 	std::time_t tt = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
     std::tm *tNow = std::localtime(&tt);
     auto now = std::chrono::high_resolution_clock::now().time_since_epoch();
@@ -290,12 +319,12 @@ void C_logger::logMsg(std::string sMsg)
     m_condVar.notify_one(); //run the storing thread
 }
 
-std::string C_logger::getFileName()
+std::wstring C_logger::getFileName()
 {
     if (m_file.good())
         return m_sFileName;
     else
-        return "";
+        return L"";
 }
 
 uint32_t C_logger::getLineCount()
@@ -318,4 +347,54 @@ void C_logger::swapQueues()
 #ifdef _DEBUG
     qDebug() << "swap";
 #endif
+}
+
+C_LibLoader::C_LibLoader(std::wstring sLibName, I_PMS_V01* host, S_Version minVersion)
+{
+#ifdef _WIN32
+	typedef I_PMS_V01* (__cdecl* GetInterface)();
+
+	HMODULE lib = LoadLibrary(sLibName.c_str());
+	if (lib)
+	{
+		GetInterface getPluginInterface = (GetInterface)GetProcAddress(lib, "GetInterface");
+		if (getPluginInterface && getPluginInterface() != nullptr)
+		{
+			I_PMS_V01* pPlugin = getPluginInterface();
+			if (pPlugin)
+			{
+				if (pPlugin->Attach(host, host->sVersion, minVersion))
+				{  
+					m_bValid = true;
+					m_lib = lib;
+					m_servant = pPlugin;
+					m_master = host;
+				}
+			}
+		}
+		if (!IsValid())
+			FreeLibrary(lib);
+	}
+#endif // _WIN32
+}
+
+C_LibLoader::~C_LibLoader()
+{
+#ifdef _WIN32
+	if (m_bValid && m_lib && m_servant)
+	{
+		m_servant->Detach(m_master);
+	}
+#endif // _WIN32
+
+}
+
+bool C_LibLoader::IsValid()
+{
+	return m_bValid;
+}
+
+I_PMS_V01* C_LibLoader::GetInterface()
+{
+	return m_servant;
 }

@@ -36,13 +36,17 @@ namespace RCI
 
 	class I_Camera
 	{
+	public:
 		virtual eRes GetDescription(S_PictureFormat& description) = 0;
 		virtual eRes GetPicture(void* buffer, uint32_t& size) = 0;
 
 		virtual eRes GetAvailableCommands(S_command** commands, uint32_t& uiCommandCount) = 0;
-		virtual eRes SetCommand(S_command* comand) = 0;
+		virtual eRes Command(S_command* comand) = 0;
 
 		virtual eRes RegisterImageReadyCallback(void(*imageReady(void))) = 0;
+		
+		virtual eRes Connect() = 0;
+		virtual eRes Disconnect() = 0;
 	};
 }
 #endif // !CAMERA_INTERFACE_H

@@ -5,10 +5,13 @@ VisualStudioVersion = 16.0.29519.87
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Rheed3_msvc_qt", "Rheed3\Rheed3_msvc_qt.vcxproj", "{B12702AD-ABFB-343A-A199-8E24837244A3}"
 	ProjectSection(ProjectDependencies) = postProject
+		{D6CD085F-505D-4221-AAD7-C022C953919A} = {D6CD085F-505D-4221-AAD7-C022C953919A}
 		{3E924DE2-7558-4DDC-BE17-4F36861BB480} = {3E924DE2-7558-4DDC-BE17-4F36861BB480}
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PMS_document_SDK", "PMS_document_SDK\PMS_document_SDK.vcxproj", "{3E924DE2-7558-4DDC-BE17-4F36861BB480}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PMS_virtual_camera", "PMS_virtual_camera\PMS_virtual_camera.vcxproj", "{D6CD085F-505D-4221-AAD7-C022C953919A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -32,6 +35,14 @@ Global
 		{3E924DE2-7558-4DDC-BE17-4F36861BB480}.Release|x64.Build.0 = Release|x64
 		{3E924DE2-7558-4DDC-BE17-4F36861BB480}.Release|x86.ActiveCfg = Release|Win32
 		{3E924DE2-7558-4DDC-BE17-4F36861BB480}.Release|x86.Build.0 = Release|Win32
+		{D6CD085F-505D-4221-AAD7-C022C953919A}.Debug|x64.ActiveCfg = Debug|x64
+		{D6CD085F-505D-4221-AAD7-C022C953919A}.Debug|x64.Build.0 = Debug|x64
+		{D6CD085F-505D-4221-AAD7-C022C953919A}.Debug|x86.ActiveCfg = Debug|Win32
+		{D6CD085F-505D-4221-AAD7-C022C953919A}.Debug|x86.Build.0 = Debug|Win32
+		{D6CD085F-505D-4221-AAD7-C022C953919A}.Release|x64.ActiveCfg = Release|x64
+		{D6CD085F-505D-4221-AAD7-C022C953919A}.Release|x64.Build.0 = Release|x64
+		{D6CD085F-505D-4221-AAD7-C022C953919A}.Release|x86.ActiveCfg = Release|Win32
+		{D6CD085F-505D-4221-AAD7-C022C953919A}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

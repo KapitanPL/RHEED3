@@ -13,7 +13,8 @@ int main(int argc, char *argv[])
         pglobals->Load();
         pglobals->setupLogger();
     }
-	rheedCore AppCore;
+	rheedCore *AppCore = &rheedCore::GetInstance();
+
     MainWindow w;
     w.show();
     return a.exec();

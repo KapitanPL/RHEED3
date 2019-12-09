@@ -20,4 +20,18 @@ if exist %SOURCEDLLPTH% (
 	copy %SOURCEDLLPTH% %PROJECTDIR%%RELATIVEPTH%
 )
 
+REM cameras
+set PLGNTARGET=%PROJECTDIR%%RELATIVEPTH%plugins_cameras\
+
+if not exist %PLGNTARGET% (
+	mkdir %PLGNTARGET%
+)
+
+set SOURCEDLLPTH=%PROJECTDIR%PMS_virtual_camera\Out\x64\%1%\plgn_virtual_camera.dll
+ECHO copy %SOURCEDLLPTH% %PLGNTARGET%
+if exist %SOURCEDLLPTH% (
+	copy %SOURCEDLLPTH% %PLGNTARGET%
+)
+
+
 rem exit

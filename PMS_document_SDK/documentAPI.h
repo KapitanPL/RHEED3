@@ -5,13 +5,38 @@
 
 namespace DocumentAPI
 {
-#ifdef __cplusplus
-	extern "C" {
-#endif
+
+	enum eDataType
+	{
+		eByte = 0,
+		eInt32,
+		eUInt32,
+		eInt64,
+		eUInt64,
+		eFloat,
+		eDouble,
+		eWChar,
+		eChar,
+		eUnknown
+	};
+
+	struct S_Data
+	{
+		size_t uiDescriptionSize;
+		void* pDescription;
+		size_t uiSize;
+		void* pData;
+	};
+
+	struct S_Document
+	{
+		wchar_t sName;
+		S_Data* pData;
+		size_t	uiDataCount;
+	};
 
 #ifdef __cplusplus
-	}
-#endif
+
 	int DLL_CALL testCall(int a, int b);
 
 	class DLL_CALL C_document
@@ -19,7 +44,18 @@ namespace DocumentAPI
 	public:
 		C_document();
 		virtual ~C_document();
+	private:
+		S_Document m_sDocument;
 	};
+
+	extern "C" {
+#endif
+		eRes SaveFile(S_Document* pDocument, wchar_t sPath);
+		eRes LoadFile(S_Document* pDocument, wchar_t sPath);
+#ifdef __cplusplus
+	}
+#endif
+	
 };
 
 #endif // !PMS_DOCUMENT_API_H
