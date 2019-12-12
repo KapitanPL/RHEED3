@@ -17,11 +17,11 @@ namespace VirtualCamera
 	} // extern C
 #endif // _cplusplus
 
-	class NOT_EXPORTED C_camera : public RCI::I_Camera, public I_CommonBase
+	class NOT_EXPORTED C_camera : public RCI::I_Camera
 	{
 	public:
 		//I_CommonBase
-		virtual int CommonBaseFunction() override;
+		virtual const char* GetIdentification() override;
 
 		//I_Camera
 		virtual eRes GetDescription(RCI::S_PictureFormat& description) override;
@@ -40,7 +40,7 @@ namespace VirtualCamera
 		static void DetacheGuest(void* iGuestInterface);
 		static void RegisterDetachCallback(void (*HostIsDetaching)(void* iHost));
 
-		static void GetModuleName(const wchar_t * sName);
+		static const wchar_t * GetModuleName();
 		static void Call(const wchar_t* sModule, const wchar_t* sCommand, void* data, int iParam);
 		static void GetCallList(const wchar_t* sModule, const wchar_t* sCommand,const wchar_t** sCommands, uint32_t &uiCount);
 
@@ -53,12 +53,14 @@ namespace VirtualCamera
 
 		virtual ~C_camera();
 		static I_PMS_V01 m_interface;
-		static const wchar_t* m_sName;
+		const wchar_t* m_sName;
 
 	private:
 		C_camera();
 		I_PMS_V01* m_pGuestInterface = nullptr;
 		std::function<void(void* iHost)> m_fDetachCallback = nullptr;
+
+		const char* m_sID;
 	};
 }
 

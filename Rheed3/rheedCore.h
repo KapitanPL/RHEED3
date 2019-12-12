@@ -26,7 +26,7 @@ public:
 	static void DetacheGuest(void* iGuestInterface);
 	static void RegisterDetachCallback(void (*HostIsDetaching)(void* iHost));
 
-	static void GetModuleName(const wchar_t* sName);
+	static const wchar_t* GetModuleName();
 	static void Call(const wchar_t* sModule, const wchar_t* sCommand, void* data, int iParam);
 	static void GetCallList(const wchar_t* sModule, const wchar_t* sCommand, const wchar_t** sCommands, uint32_t& uiCount);
 
@@ -35,9 +35,9 @@ private:
 	void loadCameraPlugins();
 	void updateCameras();
 
-	std::map<std::string, C_LibLoader*> m_mapPlugins;
+	std::map<std::wstring, C_LibLoader*> m_mapPlugins;
 	std::map<std::string, RCI::I_Camera*> m_mapCameras;
-	std::map<std::string, DocumentAPI::C_document*> m_mapDocuments;
+	std::map<std::wstring, DocumentAPI::C_document*> m_mapDocuments;
 
 	I_PMS_V01 m_iMainInterface;
 	S_Version m_sMinRequired;

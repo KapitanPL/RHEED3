@@ -57,7 +57,7 @@ extern "C" {
 		void (*Detach)(void* iGuest);
 		void (*RegisterHostDetach)(void (*HostIsDetaching)(void* iHost));
 
-		void (*GetModuleName)(const wchar_t * sName);
+		const wchar_t * (*GetModuleName)();
 		void (*Call)(const wchar_t * sModule, const wchar_t * sCommand, void* data, int iParam);
 		void (*GetCallList)(const wchar_t* sModule, const wchar_t* sCommand, const wchar_t** sCommands, uint32_t& uiCount);
 
@@ -71,7 +71,8 @@ extern "C" {
 
 class I_CommonBase
 {
-	virtual int CommonBaseFunction() = 0;
+public:
+	virtual const char * GetIdentification() = 0;
 };
 
 #endif // !COMMON_INCLUDES_H

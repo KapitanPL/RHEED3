@@ -34,7 +34,7 @@ namespace RCI
 	};
 
 
-	class I_Camera
+	class I_Camera :public I_CommonBase
 	{
 	public:
 		virtual eRes GetDescription(S_PictureFormat& description) = 0;

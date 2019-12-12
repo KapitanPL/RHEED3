@@ -40,6 +40,18 @@ rheedCore& rheedCore::GetInstance()
 
 rheedCore::~rheedCore()
 {
+	//free cameras
+	for (auto& itCamera : m_mapCameras)
+	{
+		itCamera.second->Disconnect();
+	}
+	//unload libs
+	while (m_mapPlugins.size())
+	{
+		auto itPlugin = m_mapPlugins.begin();
+		delete itPlugin->second;
+		m_mapPlugins.erase(itPlugin);
+	}
 }
 
 eRes rheedCore::loadDocument(std::string sPath)
@@ -65,9 +77,9 @@ void rheedCore::RegisterDetachCallback(void(*HostIsDetaching)(void* iHost))
 	return;
 }
 
-void rheedCore::GetModuleName(const wchar_t* sName)
+const wchar_t* rheedCore::GetModuleName()
 {
-	sName = pThis->m_sName.c_str();
+	return pThis->m_sName.c_str();
 }
 
 void rheedCore::Call(const wchar_t* sModule, const wchar_t* sCommand, void* data, int iParam)
@@ -109,7 +121,21 @@ void rheedCore::loadCameraPlugins()
 				{
 					//sName is the name of plugin to load.
 					C_LibLoader* plugin = new C_LibLoader(entry.path().wstring(), &m_iMainInterface, m_sMinRequired);
-
+					if (plugin->IsValid())
+					{
+						m_mapPlugins[entry.path().wstring()] = plugin;
+						RCI::I_Camera* pCamera = nullptr;
+						plugin->GetInterface()->Call(plugin->GetInterface()->GetModuleName(), L"I_Camera", &pCamera, 0);
+						if (pCamera)
+						{
+							m_mapCameras[pCamera->GetIdentification()] = pCamera;
+						}
+						else
+						{
+							delete plugin;
+							m_mapPlugins.erase(entry.path().wstring());
+						}
+					}
 				}
 			}
 		}

@@ -363,7 +363,7 @@ C_LibLoader::C_LibLoader(std::wstring sLibName, I_PMS_V01* host, S_Version minVe
 			I_PMS_V01* pPlugin = getPluginInterface();
 			if (pPlugin)
 			{
-				if (pPlugin->Attach(host, host->sVersion, minVersion))
+				if (pPlugin->Attach(host, host->sVersion, minVersion) == eOK)
 				{  
 					m_bValid = true;
 					m_lib = lib;
@@ -384,6 +384,7 @@ C_LibLoader::~C_LibLoader()
 	if (m_bValid && m_lib && m_servant)
 	{
 		m_servant->Detach(m_master);
+		FreeLibrary(static_cast<HMODULE>(m_lib));
 	}
 #endif // _WIN32
 
