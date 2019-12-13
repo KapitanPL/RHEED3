@@ -18,6 +18,7 @@ namespace VirtualCamera
 	I_PMS_V01 C_camera::m_interface;
 
 	C_camera::C_camera()
+		: m_sUserName("virtual camera")
 	{		
 		m_sName = L"Virtual_camera";
 		m_sID = "plgn_camera_virtual_V01";
@@ -31,6 +32,12 @@ namespace VirtualCamera
 		C_camera::m_interface.GetCallList = &C_camera::GetCallList;
 		C_camera::m_interface.GetModuleName = &C_camera::GetModuleName;
 		C_camera::m_interface.RegisterHostDetach = &C_camera::RegisterDetachCallback;
+
+		generateCommands();
+	}
+
+	void C_camera::generateCommands()
+	{
 	}
 
 	C_camera& C_camera::getInstance()
@@ -53,14 +60,33 @@ namespace VirtualCamera
 		return eOK;
 	}
 
-	eRes C_camera::GetAvailableCommands(RCI::S_command** commands, uint32_t& uiCommandCount)
+	eRes C_camera::GetAvailableCommands(S_command** commands, uint32_t& uiCommandCount)
+	{
+		if (commands)
+		{
+			(*commands) = new S_command[m_vCommands.size()];
+			uiCommandCount = m_vCommands.size();
+			for (auto itCommand = m_vCommands.begin(); itCommand != m_vCommands.end(); ++itCommand)
+			{
+				(*commands)[itCommand - m_vCommands.begin()] = *itCommand;
+			}
+		}
+		return eOK;
+	}
+
+	eRes C_camera::Command(S_command* comand)
 	{
 		return eOK;
 	}
 
-	eRes C_camera::Command(RCI::S_command* comand)
+	const char* C_camera::GetUserName() const
 	{
-		return eOK;
+		return m_sUserName;
+	}
+
+	const char* C_camera::GetIconPath() const
+	{
+		return nullptr;
 	}
 
 	eRes C_camera::RegisterImageReadyCallback(void(*imageReady(void)))

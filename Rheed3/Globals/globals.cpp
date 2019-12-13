@@ -399,3 +399,11 @@ I_PMS_V01* C_LibLoader::GetInterface()
 {
 	return m_servant;
 }
+
+QColor getContrastColor(QColor& color)
+{
+    if ((color.red() * 299 + color.green() * 587 + color.blue() * 114) / 100 >= 128)
+        return Qt::black;
+    else
+        return Qt::white;
+}

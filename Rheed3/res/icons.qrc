@@ -1,0 +1,15 @@
+<RCC>
+    <qresource prefix="/">
+        <file alias="directory.svg">system/directory.svg</file>
+        <file alias="warning.svg">system/warning.svg</file>
+        <file alias="add.svg">general/add.svg</file>
+        <file alias="remove.svg">general/remove.svg</file>
+        <file alias="cameras.svg">general/cameras.svg</file>
+        <file alias="camera.svg">general/camera.svg</file>
+        <file alias="spectros.svg">general/spectros.svg</file>
+        <file alias="unknown.svg">general/unknown.svg</file>
+        <file alias="expand_all.svg">general/expand_all.svg</file>
+        <file alias="colapse_all.svg">general/colapse_all.svg</file>
+    </qresource>
+    <qresource prefix="/stylesheets"/>
+</RCC>

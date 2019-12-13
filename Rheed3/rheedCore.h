@@ -30,6 +30,8 @@ public:
 	static void Call(const wchar_t* sModule, const wchar_t* sCommand, void* data, int iParam);
 	static void GetCallList(const wchar_t* sModule, const wchar_t* sCommand, const wchar_t** sCommands, uint32_t& uiCount);
 
+	//intragrace
+	const std::map<std::string, RCI::I_Camera*>* GetCameras() const;
 private:
 	rheedCore();
 	void loadCameraPlugins();

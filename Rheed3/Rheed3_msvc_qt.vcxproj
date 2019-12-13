@@ -11,6 +11,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\common_includes.cpp" />
     <ClCompile Include="Globals\globals.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="mainwindow.cpp" />
@@ -28,6 +29,11 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="deploy.bat" />
+    <None Include="res\compile_source.bat" />
+  </ItemGroup>
+  <ItemGroup>
+    <QtRcc Include="res\icons.qrc" />
+    <QtRcc Include="res\styles.qrc" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{B12702AD-ABFB-343A-A199-8E24837244A3}</ProjectGuid>
@@ -103,6 +109,9 @@
       <Command>$(projectDir)deploy.bat $(configuration) "$(QtDllPath)" "$(SolutionDir)"</Command>
       <Message>Post build copying</Message>
     </PostBuildEvent>
+    <PreBuildEvent>
+      <Command>$(projectDir)res\compile_source.bat "$(QtDllPath)" "$(projectDir)"</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -126,6 +135,9 @@
     <PostBuildEvent>
       <Message>Post build copying</Message>
     </PostBuildEvent>
+    <PreBuildEvent>
+      <Command>$(projectDir)res\compile_source.bat "$(QtDllPath)" "$(projectDir)"</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Condition="Exists('$(QtMsBuild)\qt.targets')">

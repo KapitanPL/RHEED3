@@ -33,5 +33,16 @@ if exist %SOURCEDLLPTH% (
 	copy %SOURCEDLLPTH% %PLGNTARGET%
 )
 
+REM resources
+set RESTARGET=%PROJECTDIR%%RELATIVEPTH%res\
 
+if not exist %RESTARGET% (
+	mkdir %RESTARGET%
+)
+
+set SOURCERES=%PROJECTDIR%Rheed3\res\icons.rcc
+ECHO copy %SOURCERES% %RESTARGET%
+if exist %SOURCERES% (
+	copy %SOURCERES% %RESTARGET%
+)
 rem exit

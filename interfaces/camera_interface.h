@@ -6,6 +6,8 @@
 namespace RCI
 {
 
+#ifndef _S_PictureFormat_
+#define _S_PictureFormat_
 	struct S_PictureFormat
 	{
 		//size in pixels
@@ -16,23 +18,7 @@ namespace RCI
 		//number of channels. Usually something like 3 - RGB, or 1 - mono
 		uint32_t uiChannels;
 	};
-
-	struct S_commandParam
-	{
-		char* sCommand;
-		void* pData;
-		uint64_t uiSize;
-		uint32_t uiRefCount;
-	};
-
-	struct S_command
-	{
-		char* sCommand;
-		S_commandParam* pParams;
-		uint64_t uiParamsCount;
-		uint32_t uiRefCount;
-	};
-
+#endif //_S_PictureFormat_
 
 	class I_Camera :public I_CommonBase
 	{
@@ -43,10 +29,15 @@ namespace RCI
 		virtual eRes GetAvailableCommands(S_command** commands, uint32_t& uiCommandCount) = 0;
 		virtual eRes Command(S_command* comand) = 0;
 
+		virtual const char* GetUserName() const = 0; //if empty, plugin name will be used
+		virtual const char* GetIconPath() const = 0; //if empty, generic Icon will be used
+
 		virtual eRes RegisterImageReadyCallback(void(*imageReady(void))) = 0;
 		
 		virtual eRes Connect() = 0;
 		virtual eRes Disconnect() = 0;
 	};
+
+
 }
 #endif // !CAMERA_INTERFACE_H

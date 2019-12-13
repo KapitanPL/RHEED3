@@ -14,6 +14,10 @@
 
 #include "./../common_includes.h"
 
+#include <QColor>
+
+QColor getContrastColor(QColor& color);
+
 class C_logger
 {
 public:
@@ -70,6 +74,7 @@ public:
     QString m_sLogPath = "./Logs";
 	QString m_sPluginPath = "./Plugins";
 	QString m_sCameraPluginPath = "./plugins_cameras";
+    QString m_sIconResources = "./res/icons.rcc";
 	QString m_sGlobalPath = "";
     //logLevel 0 = default, log anything sent to logger.
     //logLevel 1 = debug level, special code points can be sprinkled by additional debug code

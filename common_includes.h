@@ -30,18 +30,65 @@
   #endif
 #endif
 
-enum eRes
+typedef enum eRes
 {
 	eERR_VERSION = -3,
 	eERR_ALREADYINUSE = -2,
 	eERR_FAIL = -1,
 	eOK = 0,
 	eUnknown
-};
+} eRes;
 
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+#ifndef _S_Variant_
+#define _S_Variant_
+	namespace DataEnumType
+	{
+		typedef enum _eDataType
+		{
+			eUnknown = 0x0000,
+			eSigned = 1 << 1,
+			eInt8 = 1 << 2, // byte
+			eInt16 = 1 << 3,
+			eInt32 = 1 << 4,
+			eInt64 = 1 << 5,
+			eFloat = 1 << 6,
+			eDouble = 1 << 7,
+			eVariant = 1 << 8,
+			eMax = 1 << 9
+		} eDataType;
+	}
+
+	struct S_variant
+	{
+		const char* sName; //use only as sName = "xyz" or you are responsible for memory management
+		DataEnumType::eDataType eType;
+		uint32_t uiCount;
+		void* pData;
+	};
+
+	eRes InitVariant(S_variant& var, DataEnumType::eDataType eType, uint32_t uiCount, const char* sName, bool bZeroMemory);
+
+	eRes ReleaseVariant(S_variant& var);
+#endif //_S_variant
+
+	struct S_commandParam
+	{
+		char* sCommand;
+		S_variant sData;
+		uint32_t uiRefCount;
+	};
+
+	struct S_command
+	{
+		char* sCommand;
+		S_commandParam* pParams;
+		uint64_t uiParamsCount;
+		uint32_t uiRefCount;
+	};
 
 	struct S_Version
 	{

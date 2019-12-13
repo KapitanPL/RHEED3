@@ -27,8 +27,11 @@ namespace VirtualCamera
 		virtual eRes GetDescription(RCI::S_PictureFormat& description) override;
 		virtual eRes GetPicture(void* buffer, uint32_t& size) override;
 
-		virtual eRes GetAvailableCommands(RCI::S_command** commands, uint32_t& uiCommandCount) override;
-		virtual eRes Command(RCI::S_command* comand) override;
+		virtual eRes GetAvailableCommands(S_command** commands, uint32_t& uiCommandCount) override;
+		virtual eRes Command(S_command* comand) override;
+
+		virtual const char* GetUserName() const override; //if empty, plugin name will be used
+		virtual const char* GetIconPath() const override; //if empty, generic Icon
 
 		virtual eRes RegisterImageReadyCallback(void(*imageReady(void))) override;
 
@@ -57,10 +60,13 @@ namespace VirtualCamera
 
 	private:
 		C_camera();
+		void generateCommands();
 		I_PMS_V01* m_pGuestInterface = nullptr;
 		std::function<void(void* iHost)> m_fDetachCallback = nullptr;
 
-		const char* m_sID;
+		const char* m_sID = nullptr;
+		const char* m_sUserName = nullptr;
+		std::vector<S_command> m_vCommands;
 	};
 }
 

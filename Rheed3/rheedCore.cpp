@@ -6,6 +6,11 @@
 
 static C_globals* pglobals = &C_globals::getInstance();
 
+const std::map<std::string, RCI::I_Camera*>* rheedCore::GetCameras() const
+{
+	return &m_mapCameras;
+}
+
 rheedCore::rheedCore()
 {
 	wchar_t sMsg[256];

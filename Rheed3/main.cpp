@@ -15,7 +15,7 @@ int main(int argc, char *argv[])
     }
 	rheedCore *AppCore = &rheedCore::GetInstance();
 
-    MainWindow w;
+    MainWindow w(AppCore);
     w.show();
     return a.exec();
 }
