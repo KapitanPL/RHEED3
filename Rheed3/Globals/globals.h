@@ -15,6 +15,9 @@
 #include "./../common_includes.h"
 
 #include <QColor>
+#include <QMetaType>
+Q_DECLARE_METATYPE(wchar_t);
+Q_DECLARE_METATYPE(S_variant);
 
 QColor getContrastColor(QColor& color);
 

@@ -32,6 +32,8 @@ public:
 
 	//intragrace
 	const std::map<std::string, RCI::I_Camera*>* GetCameras() const;
+
+
 private:
 	rheedCore();
 	void loadCameraPlugins();

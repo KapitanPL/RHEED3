@@ -30,16 +30,34 @@
   #endif
 #endif
 
-typedef enum eRes
-{
-	eERR_VERSION = -3,
-	eERR_ALREADYINUSE = -2,
-	eERR_FAIL = -1,
-	eOK = 0,
-	eUnknown
-} eRes;
+typedef int eRes;
+#define	eERR_NOT_IMPLEMENTED -4
+#define	eERR_VERSION -3
+#define	eERR_ALREADYINUSE -2
+#define	eERR_FAIL -1
+#define	eOK 0
+
+//variant names
+static const char* COM_GUI_NAME = "GUI_NAME"; //displayed in userspace
+static const char* COM_ID_NAME = "ID_NAME"; //id To be send back, to inform what triggered it
+static const char* COM_VALUE = "VALUE"; //single value, usually used when calling back. When filled will be used as default
+///if value supplied together with Button it can indicate toolbutton /button as checkbox
+static const char* COM_RANGE = "RANGE"; //is supposed to contain two values, MIN and MAX
+static const char* COM_MAX = "MAX";
+static const char* COM_MIN = "MIN";
+static const char* COM_ENUM_VALS = "ENUM_VALS"; //multiple values. Can be used to populate radio group, or combo box
+static const char* COM_STRING_INPUT = "STRING_INPUT"; //asks for string back, usually edit
+static const char* COM_BUTTON = "BUTTON"; //if data && data.type == eInt8, 0 - normal push button, 1 - 
+static const char* COM_CHECKBOX = "CHECK_BOX";
+static const char* COM_COMBO = "COMBO_BOX";
+static const char* COM_TOOLTIP = "TOOLTIP";
+
+static const char* COM_ICON = "ICON"; //expects path to icon used for the command
+
+static const char* COM_DEVICE_CALLBACK = "DEVICE_CALLBACK"; //gui changed, report to device
 
 #ifdef __cplusplus
+#include <functional>
 extern "C" {
 #endif
 
@@ -47,18 +65,24 @@ extern "C" {
 #define _S_Variant_
 	namespace DataEnumType
 	{
-		typedef enum _eDataType
+		typedef enum eDataType : uint32_t
 		{
-			eUnknown = 0x0000,
-			eSigned = 1 << 1,
-			eInt8 = 1 << 2, // byte
-			eInt16 = 1 << 3,
-			eInt32 = 1 << 4,
-			eInt64 = 1 << 5,
-			eFloat = 1 << 6,
-			eDouble = 1 << 7,
-			eVariant = 1 << 8,
-			eMax = 1 << 9
+			eUnknown = 0,
+			eInt8, 
+			eUInt8,
+			eInt16,
+			eUInt16,
+			eInt32,
+			eUInt32,
+			eInt64,
+			eUInt64,
+			eFloat,
+			eDouble,
+			eChar,
+			eByte,
+			eWChar,
+			eVariant,
+			eMax
 		} eDataType;
 	}
 
@@ -73,21 +97,16 @@ extern "C" {
 	eRes InitVariant(S_variant& var, DataEnumType::eDataType eType, uint32_t uiCount, const char* sName, bool bZeroMemory);
 
 	eRes ReleaseVariant(S_variant& var);
-#endif //_S_variant
 
-	struct S_commandParam
-	{
-		char* sCommand;
-		S_variant sData;
-		uint32_t uiRefCount;
-	};
+	eRes CopyVariant(S_variant& dst, S_variant& src);
+
+	//S_variant& FindSubVariant(S_variant& var, DataEnumType::eDataType eType, const char* sName);
+#endif //_S_variant
 
 	struct S_command
 	{
-		char* sCommand;
-		S_commandParam* pParams;
-		uint64_t uiParamsCount;
-		uint32_t uiRefCount;
+		const char* sCommand;
+		S_variant sData;
 	};
 
 	struct S_Version
@@ -116,10 +135,41 @@ extern "C" {
 } // extern "C"
 #endif // _cplusplus
 
-class I_CommonBase
+template<typename T> eRes UseVariantValue(S_variant& var, T fun)
 {
-public:
-	virtual const char * GetIdentification() = 0;
+	switch (var.eType)
+	{
+	case DataEnumType::eInt8:
+		return fun((int8_t*)var.pData, var.uiCount);
+	case DataEnumType::eUInt8:
+		return fun((uint8_t*)var.pData, var.uiCount);
+	case DataEnumType::eInt16:
+		return fun((int16_t*)var.pData, var.uiCount);
+	case DataEnumType::eUInt16:
+		return fun((uint16_t*)var.pData, var.uiCount);
+	case DataEnumType::eInt32:
+		return fun((int32_t*)var.pData, var.uiCount);
+	case DataEnumType::eUInt32:
+		return fun((uint32_t*)var.pData, var.uiCount);
+	case DataEnumType::eInt64:
+		return fun((int64_t*)var.pData, var.uiCount);
+	case DataEnumType::eUInt64:
+		return fun((uint64_t*)var.pData, var.uiCount);
+	case DataEnumType::eFloat:
+		return fun((float*)var.pData, var.uiCount);
+	case DataEnumType::eDouble:
+		return fun((double*)var.pData, var.uiCount);
+	case DataEnumType::eChar:
+		return fun((char*)var.pData, var.uiCount);
+	case DataEnumType::eByte:
+		return fun((unsigned char*)var.pData, var.uiCount);
+	case DataEnumType::eWChar:
+		return fun((wchar_t*)var.pData, var.uiCount);
+	case DataEnumType::eVariant:
+		return fun((S_variant*)var.pData, var.uiCount);
+	default:
+		return eERR_NOT_IMPLEMENTED;
+	}
 };
 
 #endif // !COMMON_INCLUDES_H

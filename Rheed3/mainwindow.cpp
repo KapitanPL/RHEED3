@@ -13,6 +13,7 @@
 #include <QMessageBox>
 
 #include <./Globals/globals.h>
+#include <./QCommandWidget.h>
 
 #ifdef _DEBUG
     #include <QDebug>
@@ -188,9 +189,52 @@ QWidget* MainWindow::createCameraGUI(RCI::I_Camera* pCamera)
         );
         pRunL->addWidget(pCloseButton);
 
-        S_command* pCommands = nullptr;
+        QHBoxLayout* hPlay = new QHBoxLayout();
+        hPlay->setSpacing(1);
+        hPlay->setContentsMargins(1, 1, 1, 1);
+        pRunL->addLayout(hPlay);
+        uint32_t uiSize = 0;
         uint32_t uiCount = 0;
-        pCamera->GetAvailableCommands(&pCommands, uiCount);
+        QSize iconSize = QSize(40, 40);
+        if (pCamera->GetData(nullptr, uiSize) != eERR_NOT_IMPLEMENTED)
+        {
+            QPushButton* pFrameCapture = new QPushButton();
+            pFrameCapture->setObjectName("singleFrameCapture");
+            pFrameCapture->setIcon(QIcon(":/capture.svg"));
+            pFrameCapture->setIconSize(iconSize);
+            pFrameCapture->setToolTip(tr("Capture single frame"));
+            hPlay->addWidget(pFrameCapture);
+        }
+
+        if (pCamera->GetNData(nullptr, uiSize, uiCount) != eERR_NOT_IMPLEMENTED)
+        {
+            QPushButton* pNFrameCapture = new QPushButton();
+            pNFrameCapture->setObjectName("NFrameCapture");
+            pNFrameCapture->setIcon(QIcon(":/captureN.svg"));
+            pNFrameCapture->setIconSize(iconSize);
+            pNFrameCapture->setToolTip(tr("Capture N frame"));
+            hPlay->addWidget(pNFrameCapture);
+        }
+
+        if (pCamera->GetDataStream(nullptr, uiSize) != eERR_NOT_IMPLEMENTED)
+        {
+            QPushButton* pDataStream = new QPushButton();
+            pDataStream->setObjectName("dataStream");
+            pDataStream->setIcon(QIcon(":/play.svg"));
+            pDataStream->setIconSize(iconSize);
+            pDataStream->setToolTip(tr("Starts data stream"));
+            hPlay->addWidget(pDataStream);
+        }
+
+        S_command* pCommands = nullptr;
+        uint32_t uiCommandcount = 0;
+        pCamera->GetAvailableCommands(&pCommands, uiCommandcount);
+        for (uint32_t uiCom = 0; uiCom < uiCommandcount; uiCom++)
+        {
+            QCommandWidget* pWidget = new QCommandWidget();
+            pWidget->Init(pCommands[uiCom], pCamera);
+            pRunL->addWidget(pWidget);
+        }
 
         pRunL->addStretch(1);
 
@@ -198,4 +242,3 @@ QWidget* MainWindow::createCameraGUI(RCI::I_Camera* pCamera)
     }
     return nullptr;
 }
-

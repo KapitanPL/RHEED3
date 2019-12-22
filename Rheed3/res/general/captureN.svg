@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="20px"
+   height="20px"
+   viewBox="0 0 20 20"
+   version="1.1"
+   id="svg12"
+   sodipodi:docname="captureN.svg"
+   inkscape:version="0.92.4 (5da689c313, 2019-01-14)">
+  <metadata
+     id="metadata16">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <sodipodi:namedview
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1"
+     objecttolerance="10"
+     gridtolerance="10"
+     guidetolerance="10"
+     inkscape:pageopacity="0"
+     inkscape:pageshadow="2"
+     inkscape:window-width="1920"
+     inkscape:window-height="1001"
+     id="namedview14"
+     showgrid="false"
+     inkscape:zoom="11.8"
+     inkscape:cx="-3.940678"
+     inkscape:cy="10"
+     inkscape:window-x="-9"
+     inkscape:window-y="-9"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg12" />
+  <!-- Generator: Sketch 3.8.1 (29687) - http://www.bohemiancoding.com/sketch -->
+  <title
+     id="title2">folder [#1795]</title>
+  <desc
+     id="desc4">Created with Sketch.</desc>
+  <defs
+     id="defs6" />
+  <path
+     sodipodi:type="star"
+     style="fill:#00ff00;fill-opacity:1;stroke:none;stroke-width:0.31951609;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     id="path816"
+     sodipodi:sides="3"
+     sodipodi:cx="6.9427336"
+     sodipodi:cy="9.4992623"
+     sodipodi:r1="6.4083729"
+     sodipodi:r2="3.2041864"
+     sodipodi:arg1="0"
+     sodipodi:arg2="1.0471976"
+     inkscape:flatsided="false"
+     inkscape:rounded="0"
+     inkscape:randomized="0"
+     d="m 13.351107,9.4992619 -4.8062802,2.7749071 -4.8062795,2.774907 0,-5.5498143 0,-5.5498136 4.8062798,2.774907 z"
+     inkscape:transform-center-x="-1.602093" />
+  <path
+     sodipodi:type="star"
+     style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:0.38712174;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     id="path816-7"
+     sodipodi:sides="3"
+     sodipodi:cx="6.8337591"
+     sodipodi:cy="9.3419365"
+     sodipodi:r1="7.7643051"
+     sodipodi:r2="3.8821526"
+     sodipodi:arg1="0"
+     sodipodi:arg2="1.0471976"
+     inkscape:flatsided="false"
+     inkscape:rounded="0"
+     inkscape:randomized="0"
+     d="m 14.598064,9.3419361 -5.8232286,3.3620429 -5.8232286,3.362043 0,-6.7240861 0,-6.7240853 5.823229,3.3620429 z"
+     inkscape:transform-center-x="-1.941076" />
+  <rect
+     style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:0.30000001;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     id="rect824"
+     width="2.2033899"
+     height="14.152542"
+     x="14.888564"
+     y="2.0538049" />
+  <rect
+     style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.30000001;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     id="rect1088"
+     width="7.7118645"
+     height="8.3898306"
+     x="10.762712"
+     y="9.9152546" />
+  <text
+     xml:space="preserve"
+     style="font-style:normal;font-weight:normal;font-size:40px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none"
+     x="10.847456"
+     y="17.711864"
+     id="text834"><tspan
+       sodipodi:role="line"
+       id="tspan832"
+       x="10.847456"
+       y="17.711864"
+       style="font-style:italic;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:10.66666698px;font-family:Cambria;-inkscape-font-specification:'Cambria Italic';fill:#ff0000;fill-opacity:1">N</tspan></text>
+</svg>

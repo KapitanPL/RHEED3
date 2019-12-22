@@ -2,6 +2,7 @@
 #define CAMERA_INTERFACE_H
 
 #include "../common_includes.h" 
+#include "common_interface.h"
 
 namespace RCI
 {
@@ -20,22 +21,11 @@ namespace RCI
 	};
 #endif //_S_PictureFormat_
 
-	class I_Camera :public I_CommonBase
+	class I_Camera :public I_BaseDevice
 	{
 	public:
-		virtual eRes GetDescription(S_PictureFormat& description) = 0;
-		virtual eRes GetPicture(void* buffer, uint32_t& size) = 0;
-
-		virtual eRes GetAvailableCommands(S_command** commands, uint32_t& uiCommandCount) = 0;
-		virtual eRes Command(S_command* comand) = 0;
-
-		virtual const char* GetUserName() const = 0; //if empty, plugin name will be used
-		virtual const char* GetIconPath() const = 0; //if empty, generic Icon will be used
-
-		virtual eRes RegisterImageReadyCallback(void(*imageReady(void))) = 0;
+		virtual eRes GetPictureDescription(S_PictureFormat& description) = 0;
 		
-		virtual eRes Connect() = 0;
-		virtual eRes Disconnect() = 0;
 	};
 
 

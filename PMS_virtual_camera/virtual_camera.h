@@ -5,6 +5,8 @@
 #include "./../interfaces/camera_interface.h"
 #include <functional>
 
+static const char* ID_MODE = "id_mode";
+
 namespace VirtualCamera
 {
 #ifdef __cplusplus
@@ -24,16 +26,20 @@ namespace VirtualCamera
 		virtual const char* GetIdentification() override;
 
 		//I_Camera
-		virtual eRes GetDescription(RCI::S_PictureFormat& description) override;
-		virtual eRes GetPicture(void* buffer, uint32_t& size) override;
+		virtual eRes GetPictureDescription(RCI::S_PictureFormat& description) override;
+		virtual eRes GetData(void* buffer, uint32_t& size) override;
+		//uiCount is both, in and out. It will attempt to fill data up to uiCount, but if less, uiCOunt is changed
+		virtual eRes GetNData(void* buffer, uint32_t& size, uint32_t& uiCount) override;
+		//Starts data stream. The device calls setDataCallback to get memory where to write
+		virtual eRes GetDataStream(void* (*setDataCallback(void*, uint32_t)), uint32_t& size) override;
 
 		virtual eRes GetAvailableCommands(S_command** commands, uint32_t& uiCommandCount) override;
 		virtual eRes Command(S_command* comand) override;
+		virtual void RegisterRedrawGUICallback(void(*RedrawGUI(S_command*, void*)), void* pParam) override;
 
 		virtual const char* GetUserName() const override; //if empty, plugin name will be used
 		virtual const char* GetIconPath() const override; //if empty, generic Icon
 
-		virtual eRes RegisterImageReadyCallback(void(*imageReady(void))) override;
 
 		virtual eRes Connect() override;
 		virtual eRes Disconnect() override;
@@ -61,12 +67,22 @@ namespace VirtualCamera
 	private:
 		C_camera();
 		void generateCommands();
+		eRes modeChanged(uint8_t uiSelection);
+
+		uint32_t m_uiMode = 0; //0 == file sim, 1 = scene simiulation
+
 		I_PMS_V01* m_pGuestInterface = nullptr;
 		std::function<void(void* iHost)> m_fDetachCallback = nullptr;
 
 		const char* m_sID = nullptr;
 		const char* m_sUserName = nullptr;
 		std::vector<S_command> m_vCommands;
+		std::vector<S_command> m_vFileCommands;
+		std::vector<S_command> m_vSceneCommands;
+		std::vector<S_command> * m_pCurrentCommands = &m_vFileCommands;
+
+		void* m_pRedrawGuiParam = nullptr;
+		std::function<void(S_command*)> m_fRedrawGuiRequest = nullptr;
 	};
 }
 

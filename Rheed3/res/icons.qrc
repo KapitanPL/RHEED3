@@ -10,6 +10,10 @@
         <file alias="unknown.svg">general/unknown.svg</file>
         <file alias="expand_all.svg">general/expand_all.svg</file>
         <file alias="colapse_all.svg">general/colapse_all.svg</file>
+        <file alias="play.svg">general/play.svg</file>
+        <file alias="capture.svg">general/capture.svg</file>
+        <file alias="captureN.svg">general/captureN.svg</file>
+        <file alias="stop.svg">general/stop.svg</file>
     </qresource>
     <qresource prefix="/stylesheets"/>
 </RCC>
