@@ -1,13 +1,13 @@
 #include "mainwindow.h"
 
 #include <QApplication>
-#include <./Globals/globals.h>
+#include "./Globals/globals.h"
 #include "rheedCore.h"
 
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
-    qRegisterMetaType<wchar_t>();
+    qRegisterMetaType<char>();
     qRegisterMetaType<S_variant>();
     C_globals * pglobals = &C_globals::getInstance();
     if (pglobals)

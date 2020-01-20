@@ -9,11 +9,10 @@
 #include <QResource>
 #include <QLabel>
 #include <QPushButton>
-#include <QStackedWidget>
 #include <QMessageBox>
 
-#include <./Globals/globals.h>
-#include <./QCommandWidget.h>
+#include "./Globals/globals.h"
+
 
 #ifdef _DEBUG
     #include <QDebug>
@@ -141,11 +140,25 @@ void MainWindow::setupSystemTray()
 {
 }
 
+void MainWindow::redrawGuiRequet(S_command* pwhat, void* pThis, I_CommonBase* pSource)
+{
+    QWidget* pT = static_cast<QWidget*>(pThis);
+    MainWindow* me = dynamic_cast<MainWindow*>(pT);
+    auto itWidget = me->mapDeviceWidgets.find(pSource);
+    if (me && itWidget != me->mapDeviceWidgets.end())
+    {
+
+    }
+}
+
 QWidget* MainWindow::createCameraGUI(RCI::I_Camera* pCamera)
 {
     if (pCamera)
     {
-        QStackedWidget* pCameraW = new QStackedWidget();
+
+        pCamera->RegisterRedrawGUICallback(&MainWindow::redrawGuiRequet, this);
+
+        QDeviceWidget* pCameraW = new QDeviceWidget();
 
         QWidget* pInitWidget = new QWidget();
         QWidget* pRunningWidget = new QWidget();
@@ -238,6 +251,7 @@ QWidget* MainWindow::createCameraGUI(RCI::I_Camera* pCamera)
 
         pRunL->addStretch(1);
 
+        mapDeviceWidgets[pCamera] = pCameraW;
         return pCameraW;
     }
     return nullptr;

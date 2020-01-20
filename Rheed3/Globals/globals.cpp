@@ -80,9 +80,9 @@ void C_globals::Load()
                         m_sLogPath.chop(1);
                      }
                  }
-                 if (loadVariant.contains("m_iLogLevel"))
+                 if (loadVariant.contains("m_iLogLeveu8"))
                  {
-                     m_iLogLevel = loadVariant["m_iLogLevel"].toInt();
+                     m_iLogLevel = loadVariant["m_iLogLeveu8"].toInt();
                  }
                  if (loadVariant.contains("m_listDebugEntries") && loadVariant["m_listDebugEntries"].isArray())
                  {
@@ -123,7 +123,7 @@ void C_globals::Save()
         saveObject["m_sLogPath"] = sLogPath;
 
         QJsonValue iLogLevel = QJsonValue(m_iLogLevel);
-        saveObject["m_iLogLevel"] = iLogLevel;
+        saveObject["m_iLogLeveu8"] = iLogLevel;
 
         QJsonArray listLogSymbols;
         for (auto itSymbol : m_listDebugEntries)
@@ -153,11 +153,11 @@ void C_globals::GetCameraPluginPath(QString& sPath)
 	sPath = sLoacalPath;
 }
 
-void C_globals::GetCameraPluginPath(std::wstring& Path)
+void C_globals::GetCameraPluginPath(std::string& Path)
 {
 	QString sqPath;
 	GetCameraPluginPath(sqPath);
-	Path = sqPath.toStdWString();
+	Path = sqPath.toStdString();
 }
 
 void C_globals::setupLogger()
@@ -188,11 +188,11 @@ void C_globals::setupLogger()
                 break;
             }
         }
-        if (!m_pLogger->init(sFileName.toStdWString()))
+        if (!m_pLogger->init(sFileName.toStdString()))
             m_pLogger = nullptr;
         if (m_pLogger)
         {
-            m_pLogger->logMsg(L"RHEED3 program started, initiating log.");
+            m_pLogger->logMsg(u8"RHEED3 program started, initiating log.");
         }
 
     }
@@ -261,7 +261,7 @@ void C_logger::work(C_logger *pThis)
     }while (pThis->m_bRun);
 }
 
-bool C_logger::init(std::wstring sFileName)
+bool C_logger::init(std::string sFileName)
 {
 	if (!std::filesystem::exists(sFileName))
 	{
@@ -281,12 +281,12 @@ bool C_logger::init(std::wstring sFileName)
 		return false;
 }
 
-void C_logger::logMsg(std::wstring sMsg)
+void C_logger::logMsg(std::string sMsg)
 {
     if (sMsg.empty() || !m_bRun)
         return;
     //std::string sCompleteMsg;
-    std::wstringstream sMsgStream;
+    std::stringstream sMsgStream;
 	std::time_t tt = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
     std::tm *tNow = std::localtime(&tt);
     auto now = std::chrono::high_resolution_clock::now().time_since_epoch();
@@ -319,12 +319,12 @@ void C_logger::logMsg(std::wstring sMsg)
     m_condVar.notify_one(); //run the storing thread
 }
 
-std::wstring C_logger::getFileName()
+std::string C_logger::getFileName()
 {
     if (m_file.good())
         return m_sFileName;
     else
-        return L"";
+        return u8"";
 }
 
 uint32_t C_logger::getLineCount()
@@ -349,12 +349,12 @@ void C_logger::swapQueues()
 #endif
 }
 
-C_LibLoader::C_LibLoader(std::wstring sLibName, I_PMS_V01* host, S_Version minVersion)
+C_LibLoader::C_LibLoader(std::string sLibName, I_PMS_V01* host, S_Version minVersion)
 {
 #ifdef _WIN32
 	typedef I_PMS_V01* (__cdecl* GetInterface)();
 
-	HMODULE lib = LoadLibrary(sLibName.c_str());
+	HMODULE lib = LoadLibrary(G_utf8towcs(sLibName.c_str()));
 	if (lib)
 	{
 		GetInterface getPluginInterface = (GetInterface)GetProcAddress(lib, "GetInterface");

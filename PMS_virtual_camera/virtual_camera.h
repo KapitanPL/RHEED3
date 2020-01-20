@@ -35,7 +35,7 @@ namespace VirtualCamera
 
 		virtual eRes GetAvailableCommands(S_command** commands, uint32_t& uiCommandCount) override;
 		virtual eRes Command(S_command* comand) override;
-		virtual void RegisterRedrawGUICallback(void(*RedrawGUI(S_command*, void*)), void* pParam) override;
+		virtual void RegisterRedrawGUICallback(void(*RedrawGUI)(S_command*, void*, I_CommonBase* pParent), void* pParam) override;
 
 		virtual const char* GetUserName() const override; //if empty, plugin name will be used
 		virtual const char* GetIconPath() const override; //if empty, generic Icon
@@ -49,9 +49,9 @@ namespace VirtualCamera
 		static void DetacheGuest(void* iGuestInterface);
 		static void RegisterDetachCallback(void (*HostIsDetaching)(void* iHost));
 
-		static const wchar_t * GetModuleName();
-		static void Call(const wchar_t* sModule, const wchar_t* sCommand, void* data, int iParam);
-		static void GetCallList(const wchar_t* sModule, const wchar_t* sCommand,const wchar_t** sCommands, uint32_t &uiCount);
+		static const char * GetModuleName();
+		static void Call(const char* sModule, const char* sCommand, void* data, int iParam);
+		static void GetCallList(const char* sModule, const char* sCommand,const char** sCommands, uint32_t &uiCount);
 
 		//lifetime
 		static C_camera& getInstance();
@@ -62,7 +62,7 @@ namespace VirtualCamera
 
 		virtual ~C_camera();
 		static I_PMS_V01 m_interface;
-		const wchar_t* m_sName;
+		const char* m_sName;
 
 	private:
 		C_camera();

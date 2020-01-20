@@ -23,7 +23,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\common_includes.h" />
-    <ClInclude Include="..\common_includes_hlp.h" />
     <ClInclude Include="..\interfaces\camera_interface.h" />
     <ClInclude Include="..\interfaces\common_interface.h" />
     <ClInclude Include="Globals\globals.h" />

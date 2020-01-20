@@ -6,7 +6,7 @@
 
 #include "./../interfaces/camera_interface.h"
 #include "./../PMS_document_SDK/documentAPI.h"
-#include <./Globals/globals.h>
+#include "./Globals/globals.h"
 
 class rheedCore
 {
@@ -26,9 +26,9 @@ public:
 	static void DetacheGuest(void* iGuestInterface);
 	static void RegisterDetachCallback(void (*HostIsDetaching)(void* iHost));
 
-	static const wchar_t* GetModuleName();
-	static void Call(const wchar_t* sModule, const wchar_t* sCommand, void* data, int iParam);
-	static void GetCallList(const wchar_t* sModule, const wchar_t* sCommand, const wchar_t** sCommands, uint32_t& uiCount);
+	static const char* GetModuleName();
+	static void Call(const char* sModule, const char* sCommand, void* data, int iParam);
+	static void GetCallList(const char* sModule, const char* sCommand, const char** sCommands, uint32_t& uiCount);
 
 	//intragrace
 	const std::map<std::string, RCI::I_Camera*>* GetCameras() const;
@@ -39,13 +39,13 @@ private:
 	void loadCameraPlugins();
 	void updateCameras();
 
-	std::map<std::wstring, C_LibLoader*> m_mapPlugins;
+	std::map<std::string, C_LibLoader*> m_mapPlugins;
 	std::map<std::string, RCI::I_Camera*> m_mapCameras;
-	std::map<std::wstring, DocumentAPI::C_document*> m_mapDocuments;
+	std::map<std::string, DocumentAPI::C_document*> m_mapDocuments;
 
 	I_PMS_V01 m_iMainInterface;
 	S_Version m_sMinRequired;
-	std::wstring m_sName = L"CORE";
+	std::string m_sName = u8"CORE";
 
 	static rheedCore* pThis;
 };

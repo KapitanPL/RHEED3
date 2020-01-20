@@ -12,11 +12,10 @@
 #include <fstream>
 #include <condition_variable>
 
-#include "./../common_includes.h"
+#include "./../../common_includes.h"
 
 #include <QColor>
 #include <QMetaType>
-Q_DECLARE_METATYPE(wchar_t);
 Q_DECLARE_METATYPE(S_variant);
 
 QColor getContrastColor(QColor& color);
@@ -33,23 +32,23 @@ public:
     static C_logger &getInstance();
     static void work(C_logger * pThis);
 
-    virtual bool init(std::wstring sFileName);
-    virtual void logMsg(std::wstring sMsg);
-    virtual std::wstring getFileName();
+    virtual bool init(std::string sFileName);
+    virtual void logMsg(std::string sMsg);
+    virtual std::string getFileName();
     virtual uint32_t getLineCount();
 private:
     C_logger();
     void swapQueues();
 
     bool m_bRun = true;
-    std::wstring m_sFileName;
-    std::wfstream m_file;
+    std::string m_sFileName;
+    std::fstream m_file;
     std::thread * m_pworkThread = nullptr;
     std::mutex m_mutexSwap;
     std::mutex m_mutexRun;
     std::condition_variable m_condVar;
-    std::queue<std::wstring> m_storeQueue;
-    std::queue<std::wstring> m_bufferQueue;
+    std::queue<std::string> m_storeQueue;
+    std::queue<std::string> m_bufferQueue;
     uint32_t m_uiLines = 0;
 };
 
@@ -67,7 +66,7 @@ public:
     void Save();
 
 	void GetCameraPluginPath(QString& sPath);
-	void GetCameraPluginPath(std::wstring& Path);
+	void GetCameraPluginPath(std::string& Path);
 
     void setupLogger();
 
@@ -94,7 +93,7 @@ private:
 class C_LibLoader
 {
 public:
-	C_LibLoader(std::wstring sLibName, I_PMS_V01 * master, S_Version minVersion);
+	C_LibLoader(std::string sLibName, I_PMS_V01 * master, S_Version minVersion);
 	~C_LibLoader();
 	bool IsValid();
 	I_PMS_V01* GetInterface();

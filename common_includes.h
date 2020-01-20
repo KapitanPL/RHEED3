@@ -30,6 +30,8 @@
   #endif
 #endif
 
+const wchar_t* G_utf8towcs(const char* str);
+
 typedef int eRes;
 #define	eERR_NOT_IMPLEMENTED -4
 #define	eERR_VERSION -3
@@ -58,6 +60,10 @@ static const char* COM_DEVICE_CALLBACK = "DEVICE_CALLBACK"; //gui changed, repor
 
 #ifdef __cplusplus
 #include <functional>
+#include <fstream>
+#include <iostream>
+#include <list>
+#include <utility>
 extern "C" {
 #endif
 
@@ -80,7 +86,6 @@ extern "C" {
 			eDouble,
 			eChar,
 			eByte,
-			eWChar,
 			eVariant,
 			eMax
 		} eDataType;
@@ -88,10 +93,16 @@ extern "C" {
 
 	struct S_variant
 	{
-		const char* sName; //use only as sName = "xyz" or you are responsible for memory management
-		DataEnumType::eDataType eType;
 		uint32_t uiCount;
 		void* pData;
+		const char* sName; //use only as sName = "xyz" or you are responsible for memory management
+		DataEnumType::eDataType eType;
+	};
+
+	struct S_variantMeta
+	{
+		S_variant* pVar;
+		int8_t iLevel;
 	};
 
 	eRes InitVariant(S_variant& var, DataEnumType::eDataType eType, uint32_t uiCount, const char* sName, bool bZeroMemory);
@@ -99,6 +110,17 @@ extern "C" {
 	eRes ReleaseVariant(S_variant& var);
 
 	eRes CopyVariant(S_variant& dst, S_variant& src);
+
+	eRes WalkVariant(S_variant& var, eRes(*callback)(S_variantMeta &varMeta, void* callbackParam), void* callbackparam);
+
+	size_t VariantDataSize(S_variant& var);
+
+	//bVolatileData can mean that the data needs to be saved at least to intermediate file, the original data will soon be released
+	eRes SaveVariantToTextFile(const char* sFileName, S_variant& var, bool bForceRawData = false, bool bVolatileData = false);
+
+	eRes SaveVariantToBinFile(const char* sFileName, S_variant& var, bool bVolatileData = false); 
+
+	eRes WriteVariantToFile(S_variantMeta& varMeta, /*S_writeVariantContext&*/ void* context);
 
 	//S_variant& FindSubVariant(S_variant& var, DataEnumType::eDataType eType, const char* sName);
 #endif //_S_variant
@@ -123,9 +145,9 @@ extern "C" {
 		void (*Detach)(void* iGuest);
 		void (*RegisterHostDetach)(void (*HostIsDetaching)(void* iHost));
 
-		const wchar_t * (*GetModuleName)();
-		void (*Call)(const wchar_t * sModule, const wchar_t * sCommand, void* data, int iParam);
-		void (*GetCallList)(const wchar_t* sModule, const wchar_t* sCommand, const wchar_t** sCommands, uint32_t& uiCount);
+		const char * (*GetModuleName)();
+		void (*Call)(const char * sModule, const char * sCommand, void* data, int iParam);
+		void (*GetCallList)(const char* sModule, const char* sCommand, const char** sCommands, uint32_t& uiCount);
 
 		//version Info:
 		//1.0 This initial version
@@ -133,7 +155,16 @@ extern "C" {
 
 #ifdef __cplusplus
 } // extern "C"
-#endif // _cplusplus
+
+struct S_writeVariantContext
+{
+	std::fstream target;
+	std::fstream tmpData;
+	int8_t iLastLevel;
+	std::list<std::pair<std::streampos, std::pair<void*,size_t>>> listOffsets;
+};
+
+bool F_FileExists(const char* sName);
 
 template<typename T> eRes UseVariantValue(S_variant& var, T fun)
 {
@@ -163,13 +194,24 @@ template<typename T> eRes UseVariantValue(S_variant& var, T fun)
 		return fun((char*)var.pData, var.uiCount);
 	case DataEnumType::eByte:
 		return fun((unsigned char*)var.pData, var.uiCount);
-	case DataEnumType::eWChar:
-		return fun((wchar_t*)var.pData, var.uiCount);
 	case DataEnumType::eVariant:
 		return fun((S_variant*)var.pData, var.uiCount);
 	default:
 		return eERR_NOT_IMPLEMENTED;
 	}
 };
+
+#endif // _cplusplus
+/*
+class C_variant
+{
+public:
+	C_variant(S_variant* pVar);
+private:
+	S_variant* m_pRef = nullptr;
+	std::multimap<const char*, S_variant*> m_mapSubVars;
+	uint64_t uiTotalSubSize = 0;
+};*/
+
 
 #endif // !COMMON_INCLUDES_H

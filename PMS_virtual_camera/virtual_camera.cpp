@@ -20,7 +20,7 @@ namespace VirtualCamera
 	C_camera::C_camera()
 		: m_sUserName("virtual camera")
 	{		
-		m_sName = L"Virtual_camera";
+		m_sName = u8"Virtual_camera";
 		m_sID = "plgn_camera_virtual_V01";
 		C_camera::m_interface.sVersion.iMajor = 1;
 		C_camera::m_interface.sVersion.iMinor = 0;
@@ -67,6 +67,20 @@ namespace VirtualCamera
 		if (uiSelection >= 0 && uiSelection <= 1)
 		{
 			m_uiMode = uiSelection;
+			switch (m_uiMode)
+			{
+			case 0:
+				m_pCurrentCommands = &m_vFileCommands;
+				break;
+			case 1:
+				m_pCurrentCommands = &m_vSceneCommands;
+				break;
+			default:
+				m_pCurrentCommands = &m_vFileCommands;
+				break;
+			}
+			if (m_fRedrawGuiRequest)
+				m_fRedrawGuiRequest(nullptr);
 			return eOK;
 		}
 		else
@@ -166,10 +180,10 @@ namespace VirtualCamera
 		return eOK;
 	}
 
-	void C_camera::RegisterRedrawGUICallback(void(*RedrawGUI(S_command*, void*)), void* pParam)
+	void C_camera::RegisterRedrawGUICallback(void(*RedrawGUI)(S_command*, void*, I_CommonBase* pParent), void* pParam)
 	{
 		m_pRedrawGuiParam = pParam;
-		m_fRedrawGuiRequest = [this, RedrawGUI](S_command* command) {RedrawGUI(command, m_pRedrawGuiParam); };
+		m_fRedrawGuiRequest = [this, RedrawGUI](S_command* command) {RedrawGUI(command, m_pRedrawGuiParam, this); };
 	}
 
 	const char* C_camera::GetUserName() const
@@ -203,8 +217,8 @@ namespace VirtualCamera
 			return eERR_VERSION;
 
 		pThis->m_pGuestInterface = (I_PMS_V01*)iGuestInterface;
-		const wchar_t* sMsg = L"Virtual camera plugin initialized.";
-		pThis->m_pGuestInterface->Call(L"CORE", L"LOG", &sMsg, 0);
+		const char* sMsg = u8"Virtual camera plugin initialized.";
+		pThis->m_pGuestInterface->Call(u8"CORE", u8"LOG", &sMsg, 0);
 		return eOK;
 	}
 
@@ -228,18 +242,18 @@ namespace VirtualCamera
 			pThis->m_fDetachCallback = HostIsDetaching;
 	}
 
-	const wchar_t * C_camera::GetModuleName()
+	const char * C_camera::GetModuleName()
 	{
 		C_camera* pThis = &C_camera::getInstance();
 		return pThis->m_sName;
 	}
 
-	void C_camera::Call(const wchar_t* sModule, const wchar_t* sCommand, void* data, int iParam)
+	void C_camera::Call(const char* sModule, const char* sCommand, void* data, int iParam)
 	{
 		C_camera* pThis = &C_camera::getInstance();
-		if (wcscmp(sModule, pThis->m_sName) == 0)
+		if (strcmp(sModule, pThis->m_sName) == 0)
 		{
-			if (wcscmp(sCommand, L"I_Camera") == 0 && data)
+			if (strcmp(sCommand, u8"I_Camera") == 0 && data)
 			{
 				RCI::I_Camera** ppCam = static_cast<RCI::I_Camera**>(data);
 				*ppCam = &C_camera::getInstance();
@@ -247,15 +261,15 @@ namespace VirtualCamera
 		}
 	}
 
-	void C_camera::GetCallList(const wchar_t* sModule, const wchar_t* sCommand,const wchar_t** sCommands, uint32_t &uiCount)
+	void C_camera::GetCallList(const char* sModule, const char* sCommand,const char** sCommands, uint32_t &uiCount)
 	{
 		C_camera* pThis = &C_camera::getInstance();
 		if (!sCommands)
 			return;
-		if (wcscmp(sModule, pThis->m_sName) == 0)
+		if (strcmp(sModule, pThis->m_sName) == 0)
 		{
 			uiCount = 0;
-			sCommands[0] = L"I_camera";
+			sCommands[0] = u8"I_camera";
 			uiCount++;
 		}
 	}

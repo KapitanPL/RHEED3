@@ -30,7 +30,7 @@ namespace DocumentAPI
 
 	struct S_Document
 	{
-		wchar_t sName;
+		char sName;
 		S_Data* pData;
 		size_t	uiDataCount;
 	};
@@ -50,8 +50,8 @@ namespace DocumentAPI
 
 	extern "C" {
 #endif
-		eRes SaveFile(S_Document* pDocument, wchar_t sPath);
-		eRes LoadFile(S_Document* pDocument, wchar_t sPath);
+		eRes SaveFile(S_Document* pDocument, char sPath);
+		eRes LoadFile(S_Document* pDocument, char sPath);
 #ifdef __cplusplus
 	}
 #endif

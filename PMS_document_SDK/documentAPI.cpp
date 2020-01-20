@@ -13,11 +13,11 @@ namespace DocumentAPI
 	{
 		return a * b;
 	}
-	eRes SaveFile(S_Document* pDocument, wchar_t sPath)
+	eRes SaveFile(S_Document* pDocument, char sPath)
 	{
 		return eOK;
 	}
-	eRes LoadFile(S_Document* pDocument, wchar_t sPath)
+	eRes LoadFile(S_Document* pDocument, char sPath)
 	{
 		return eOK;
 	}

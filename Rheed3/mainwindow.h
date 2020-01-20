@@ -3,8 +3,8 @@
 
 #include <QWidget>
 
-#include <rheedCore.h>
-
+#include "rheedCore.h"
+#include "./QCommandWidget.h"
 
 class MainWindow : public QWidget
 {
@@ -25,8 +25,10 @@ protected:
 	virtual void setupMeasurementArea();
 	virtual void setupSystemTray();
 
+    static void redrawGuiRequet(S_command* pwhat, void* pThis, I_CommonBase *pSource);
     virtual QWidget* createCameraGUI(RCI::I_Camera * pCamera);
 private:
     rheedCore* m_pCore = nullptr;
+    std::map<I_CommonBase*, QDeviceWidget*> mapDeviceWidgets;
 };
 #endif // MAINWINDOW_H

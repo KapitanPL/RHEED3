@@ -13,8 +13,8 @@ const std::map<std::string, RCI::I_Camera*>* rheedCore::GetCameras() const
 
 rheedCore::rheedCore()
 {
-	wchar_t sMsg[256];
-	_snwprintf_s(sMsg, sizeof(sMsg), L"DLL test call - %d", DocumentAPI::testCall(2, 8));
+	char sMsg[256];
+	_snprintf_s(sMsg, sizeof(sMsg), u8"DLL test call - %d", DocumentAPI::testCall(2, 8));
 	pglobals->m_pLogger->logMsg(sMsg);
 
 	m_sMinRequired.iMajor = 1;
@@ -82,20 +82,20 @@ void rheedCore::RegisterDetachCallback(void(*HostIsDetaching)(void* iHost))
 	return;
 }
 
-const wchar_t* rheedCore::GetModuleName()
+const char* rheedCore::GetModuleName()
 {
 	return pThis->m_sName.c_str();
 }
 
-void rheedCore::Call(const wchar_t* sModule, const wchar_t* sCommand, void* data, int iParam)
+void rheedCore::Call(const char* sModule, const char* sCommand, void* data, int iParam)
 {
 	if (pThis)
 	{
-		if (wcscmp(sModule, pThis->m_sName.c_str()) == 0)
+		if (strcmp(sModule, pThis->m_sName.c_str()) == 0)
 		{
-			if (wcscmp(sCommand, L"LOG") == 0 && pglobals && pglobals->m_pLogger)
+			if (strcmp(sCommand, u8"LOG") == 0 && pglobals && pglobals->m_pLogger)
 			{
-				const wchar_t** sMsg = static_cast<const wchar_t**>(data);
+				const char** sMsg = static_cast<const char**>(data);
 				pglobals->m_pLogger->logMsg(*sMsg);
 			}
 		}
@@ -106,13 +106,13 @@ void rheedCore::Call(const wchar_t* sModule, const wchar_t* sCommand, void* data
 	}
 }
 
-void rheedCore::GetCallList(const wchar_t* sModule, const wchar_t* sCommand, const wchar_t** sCommands, uint32_t& uiCount)
+void rheedCore::GetCallList(const char* sModule, const char* sCommand, const char** sCommands, uint32_t& uiCount)
 {
 }
 
 void rheedCore::loadCameraPlugins()
 {
-	std::wstring sPath;
+	std::string sPath;
 	pglobals->GetCameraPluginPath(sPath);
 	if (std::filesystem::exists(sPath))
 	{
@@ -120,17 +120,17 @@ void rheedCore::loadCameraPlugins()
 		{
 			if (entry.is_regular_file())
 			{
-				std::wstring sName = entry.path().filename().wstring();
-				std::transform(sName.begin(), sName.end(), sName.begin(), [](const wchar_t c)->wchar_t {return std::tolower(c); });
-				if (sName.compare(sName.length() - 3, 3, L"dll") == 0 && sName.compare(0, 4, L"plgn") == 0)
+				std::string sName = entry.path().filename().string();
+				std::transform(sName.begin(), sName.end(), sName.begin(), [](const char c)->char {return std::tolower(c); });
+				if (sName.compare(sName.length() - 3, 3, u8"dll") == 0 && sName.compare(0, 4, u8"plgn") == 0)
 				{
 					//sName is the name of plugin to load.
-					C_LibLoader* plugin = new C_LibLoader(entry.path().wstring(), &m_iMainInterface, m_sMinRequired);
+					C_LibLoader* plugin = new C_LibLoader(entry.path().string(), &m_iMainInterface, m_sMinRequired);
 					if (plugin->IsValid())
 					{
-						m_mapPlugins[entry.path().wstring()] = plugin;
+						m_mapPlugins[entry.path().string()] = plugin;
 						RCI::I_Camera* pCamera = nullptr;
-						plugin->GetInterface()->Call(plugin->GetInterface()->GetModuleName(), L"I_Camera", &pCamera, 0);
+						plugin->GetInterface()->Call(plugin->GetInterface()->GetModuleName(), u8"I_Camera", &pCamera, 0);
 						if (pCamera)
 						{
 							m_mapCameras[pCamera->GetIdentification()] = pCamera;
@@ -138,7 +138,7 @@ void rheedCore::loadCameraPlugins()
 						else
 						{
 							delete plugin;
-							m_mapPlugins.erase(entry.path().wstring());
+							m_mapPlugins.erase(entry.path().string());
 						}
 					}
 				}
