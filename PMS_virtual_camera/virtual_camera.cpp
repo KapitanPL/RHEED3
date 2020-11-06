@@ -1,5 +1,14 @@
 #include "virtual_camera.h"
 
+static const char* ID_MODE = "id_mode";
+static const char* ID_PATH = "id_path";
+static const char* ID_PATH_BUTTON = "id_path_button";
+
+static const char* ID_ROI_L = "id_roi_l";
+static const char* ID_ROI_T = "id_roi_t";
+static const char* ID_ROI_W = "id_roi_w";
+static const char* ID_ROI_H = "id_roi_h";
+
 namespace VirtualCamera
 {
 
@@ -38,28 +47,28 @@ namespace VirtualCamera
 
 	void C_camera::generateCommands()
 	{
-		S_command mode;
-		mode.sCommand = "MODE";
-		InitVariant(mode.sData, DataEnumType::eVariant, 4, COM_COMBO, true); 
-		S_variant* pSub = (S_variant*)mode.sData.pData;
-		const char* modeName = "Mode:";
-		InitVariant(pSub[0], DataEnumType::eUnknown, 0, COM_COMBO, false);
-		InitVariant(pSub[1], DataEnumType::eChar, 255, COM_GUI_NAME, false);
-		strncpy_s((char*)pSub[1].pData, sizeof(modeName), modeName, 255);
-		InitVariant(pSub[2], DataEnumType::eVariant, 2, COM_ENUM_VALS, false);
-		S_variant* pSub2 = (S_variant*)pSub[2].pData;
-		InitVariant(pSub2[0], DataEnumType::eChar, 255, COM_VALUE, true);
-		strncpy_s((char*)pSub2[0].pData, sizeof("File simulator"), "File simulator",255);
-		InitVariant(pSub2[1], DataEnumType::eChar, 255, COM_VALUE, true);
-		strncpy_s((char*)pSub2[1].pData, sizeof("Scene simulator"), "Scene simulator", 255);
-		InitVariant(pSub[3], DataEnumType::eChar, 255, COM_ID_NAME, true);
-		strncpy_s((char*)pSub[3].pData, sizeof(ID_MODE), ID_MODE, 255);
+		S_variant commandVariant;
+		InitVariant(commandVariant, DataEnumType::eVariant, 2, "LAYOUT", false);
+		S_variant* pSub = (S_variant*)commandVariant.pData;
+		InitVariant(*pSub, DataEnumType::eVariant, 4, COM_COMBO, false);
+		pSub = (S_variant*)pSub->pData;
+		InitStringVariant(*pSub, COM_GUI_NAME, "Mode:");
+		pSub++;
+		InitStringVariant(*pSub, COM_ENUM_VALS, "File");
+		pSub++;
+		InitStringVariant(*pSub, COM_ENUM_VALS, "Scene");
+		pSub++;
+		InitStringVariant(*pSub, COM_ID_NAME, "id_mode");
 		
+		pSub = (S_variant*)commandVariant.pData;
+		pSub++;
+		InitVariant(*pSub, DataEnumType::eVariant, 2, COM_BUTTON, false);
+		pSub = (S_variant*)pSub->pData;
+		InitStringVariant(*pSub, COM_ID_NAME, "id_push_simulator_source");
+		pSub++;
+		InitStringVariant(*pSub, COM_GUI_NAME, "PATH");
 
-
-		m_vCommands.push_back(mode); //pointers are not deep copied here, so it is ok to not release variants
-
-
+		SaveVariantToTextFile("C:/Users/Štìpán Svoboda/Documents/var.txt", commandVariant);
 	}
 
 	eRes C_camera::modeChanged(uint8_t uiSelection)
@@ -121,8 +130,8 @@ namespace VirtualCamera
 	{
 		if (commands)
 		{
-			(*commands) = new S_command[m_vCommands.size() + m_pCurrentCommands ? m_pCurrentCommands->size() : 0];
-			uiCommandCount = (uint32_t)m_vCommands.size();
+			(*commands) = new S_command[m_vCommands.size() + (m_pCurrentCommands ? m_pCurrentCommands->size() : 0)];
+			uiCommandCount = (uint32_t)(m_vCommands.size() + (m_pCurrentCommands ? m_pCurrentCommands->size() : 0));
 			for (auto itCommand = m_vCommands.begin(); itCommand != m_vCommands.end(); ++itCommand)
 			{
 				(*commands)[itCommand - m_vCommands.begin()] = *itCommand;
@@ -140,43 +149,7 @@ namespace VirtualCamera
 
 	eRes C_camera::Command(S_command* command)
 	{
-		if (command->sCommand = COM_DEVICE_CALLBACK)
-		{
-			if (command->sData.eType == DataEnumType::eVariant)
-			{
-				S_variant* pSub = (S_variant*)command->sData.pData;
-				const char* id = 0;
-				std::vector<S_variant*> vpDatas;
-				for (uint32_t ui = 0; ui < command->sData.uiCount; ++ui)
-				{
-					if (strncmp(pSub[ui].sName, COM_ID_NAME, sizeof(COM_ID_NAME)) == 0 && pSub[ui].eType == DataEnumType::eChar)
-					{
-						id = (const char*)pSub[ui].pData;
-					}
-					else if (strncmp(pSub[ui].sName, COM_VALUE, sizeof(COM_VALUE)) == 0 )
-					{
-						vpDatas.push_back(&pSub[ui]);
-					}
-					else if (strncmp(pSub[ui].sName, COM_ENUM_VALS, sizeof(COM_ENUM_VALS)) == 0)
-					{
-						vpDatas.push_back(&pSub[ui]);
-					}
-				}
-				if (id && strncmp(id, ID_MODE, sizeof(ID_MODE))==0 && vpDatas.size())
-				{
-					auto itData = std::find_if(vpDatas.begin(), vpDatas.end(), [](auto it) {return it->eType == DataEnumType::eUInt8 || it->eType == DataEnumType::eChar; });
-					if (itData != vpDatas.end())
-					{
-						if ((*itData)->eType == DataEnumType::eUInt8)
-						{
-							return modeChanged(*(uint8_t*)(*itData)->pData);
-						}
-					}
-				}
-
-			}
-
-		}
+		
 		return eOK;
 	}
 
@@ -217,8 +190,9 @@ namespace VirtualCamera
 			return eERR_VERSION;
 
 		pThis->m_pGuestInterface = (I_PMS_V01*)iGuestInterface;
-		const char* sMsg = u8"Virtual camera plugin initialized.";
-		pThis->m_pGuestInterface->Call(u8"CORE", u8"LOG", &sMsg, 0);
+		const char* sMsg = "Virtual camera plugin initialized.";
+		pThis->m_pGuestInterface->Call("CORE", "LOG", &sMsg, 0);
+		//pThis->m_pGuestInterface->Call("CORE", "GLOBALS")
 		return eOK;
 	}
 

@@ -15,6 +15,7 @@
     <ClCompile Include="Globals\globals.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="mainwindow.cpp" />
+    <ClCompile Include="QCameraWidget.cpp" />
     <ClCompile Include="QCommandWidget.cpp" />
     <ClCompile Include="rheedCore.cpp" />
   </ItemGroup>
@@ -28,6 +29,7 @@
     <ClInclude Include="Globals\globals.h" />
     <ClInclude Include="interfaces\documentAPI.h" />
     <QtMoc Include="QCommandWidget.h" />
+    <ClInclude Include="QCameraWidget.h" />
     <ClInclude Include="rheedCore.h" />
   </ItemGroup>
   <ItemGroup>

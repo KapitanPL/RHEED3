@@ -12,7 +12,7 @@
 #include <QMessageBox>
 
 #include "./Globals/globals.h"
-
+#include "QCameraWidget.h"
 
 #ifdef _DEBUG
     #include <QDebug>
@@ -147,7 +147,7 @@ void MainWindow::redrawGuiRequet(S_command* pwhat, void* pThis, I_CommonBase* pS
     auto itWidget = me->mapDeviceWidgets.find(pSource);
     if (me && itWidget != me->mapDeviceWidgets.end())
     {
-
+        //itWidget->second.c
     }
 }
 
@@ -158,9 +158,9 @@ QWidget* MainWindow::createCameraGUI(RCI::I_Camera* pCamera)
 
         pCamera->RegisterRedrawGUICallback(&MainWindow::redrawGuiRequet, this);
 
-        QDeviceWidget* pCameraW = new QDeviceWidget();
+        QDeviceWidget* pCameraW = new QCameraWidget(pCamera);
 
-        QWidget* pInitWidget = new QWidget();
+        /*QWidget* pInitWidget = new QWidget();
         QWidget* pRunningWidget = new QWidget();
         pCameraW->addWidget(pInitWidget);
         pCameraW->addWidget(pRunningWidget);
@@ -249,7 +249,7 @@ QWidget* MainWindow::createCameraGUI(RCI::I_Camera* pCamera)
             pRunL->addWidget(pWidget);
         }
 
-        pRunL->addStretch(1);
+        pRunL->addStretch(1);*/
 
         mapDeviceWidgets[pCamera] = pCameraW;
         return pCameraW;

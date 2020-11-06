@@ -33,6 +33,9 @@
 const wchar_t* G_utf8towcs(const char* str);
 
 typedef int eRes;
+#define eERR_SIZE -7
+#define eERR_RANGE  -6
+#define eERR_MEMORY -5
 #define	eERR_NOT_IMPLEMENTED -4
 #define	eERR_VERSION -3
 #define	eERR_ALREADYINUSE -2
@@ -53,10 +56,16 @@ static const char* COM_BUTTON = "BUTTON"; //if data && data.type == eInt8, 0 - n
 static const char* COM_CHECKBOX = "CHECK_BOX";
 static const char* COM_COMBO = "COMBO_BOX";
 static const char* COM_TOOLTIP = "TOOLTIP";
+static const char* GUI_COMMAND = "GUI_COMMAND";
 
 static const char* COM_ICON = "ICON"; //expects path to icon used for the command
 
 static const char* COM_DEVICE_CALLBACK = "DEVICE_CALLBACK"; //gui changed, report to device
+
+//special command names
+static const char* GUI_COMMAND_GROUP = "GUI_COMMAND_GROUP";
+
+static size_t STRING_SAFETY_LENGTH = 1 << 10;
 
 #ifdef __cplusplus
 #include <functional>
@@ -93,7 +102,9 @@ extern "C" {
 
 	struct S_variant
 	{
+		uint32_t uiRefCount;
 		uint32_t uiCount;
+		uint32_t uiAllocCount;
 		void* pData;
 		const char* sName; //use only as sName = "xyz" or you are responsible for memory management
 		DataEnumType::eDataType eType;
@@ -106,8 +117,18 @@ extern "C" {
 	};
 
 	eRes InitVariant(S_variant& var, DataEnumType::eDataType eType, uint32_t uiCount, const char* sName, bool bZeroMemory);
+	
+	eRes InitStringVariant(S_variant& var, const char* sName,const char * sString);
+
+	eRes ReAllocVariant(S_variant& var, uint32_t uiCount);
 
 	eRes ReleaseVariant(S_variant& var);
+
+	eRes AddRefVariant(S_variant& var);
+
+	eRes AppendVariant(S_variant& trunk, S_variant& branch);
+
+	eRes AppendVariantValue(S_variant& trunk, S_variant& branch);
 
 	eRes CopyVariant(S_variant& dst, S_variant& src);
 
@@ -118,9 +139,13 @@ extern "C" {
 	//bVolatileData can mean that the data needs to be saved at least to intermediate file, the original data will soon be released
 	eRes SaveVariantToTextFile(const char* sFileName, S_variant& var, bool bForceRawData = false, bool bVolatileData = false);
 
+	eRes LoadVariantFromTextFile(const char* sFileName, S_variant& var, bool bAppend = false);
+
 	eRes SaveVariantToBinFile(const char* sFileName, S_variant& var, bool bVolatileData = false); 
 
 	eRes WriteVariantToFile(S_variantMeta& varMeta, /*S_writeVariantContext&*/ void* context);
+
+	eRes UseVariantValueDirect_C(S_variant* pVar, eRes(*fCall)(void*, uint32_t, DataEnumType::eDataType, void*), void* pCallParam);
 
 	//S_variant& FindSubVariant(S_variant& var, DataEnumType::eDataType eType, const char* sName);
 #endif //_S_variant
@@ -128,7 +153,7 @@ extern "C" {
 	struct S_command
 	{
 		const char* sCommand;
-		S_variant sData;
+		S_variant * pData;
 	};
 
 	struct S_Version
@@ -160,11 +185,18 @@ struct S_writeVariantContext
 {
 	std::fstream target;
 	std::fstream tmpData;
+	std::streampos startPos;
 	int8_t iLastLevel;
 	std::list<std::pair<std::streampos, std::pair<void*,size_t>>> listOffsets;
 };
 
+struct S_readVariantContext
+{
+	std::fstream target;
+};
+
 bool F_FileExists(const char* sName);
+eRes UseVariantValueDirect(S_variant* pVar, std::function<eRes(void*,uint32_t, DataEnumType::eDataType, void*)> fCall, void* pCallParam);
 
 template<typename T> eRes UseVariantValue(S_variant& var, T fun)
 {
@@ -200,6 +232,7 @@ template<typename T> eRes UseVariantValue(S_variant& var, T fun)
 		return eERR_NOT_IMPLEMENTED;
 	}
 };
+
 
 #endif // _cplusplus
 /*

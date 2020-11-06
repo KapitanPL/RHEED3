@@ -5,7 +5,7 @@
 #include "./../interfaces/camera_interface.h"
 #include <functional>
 
-static const char* ID_MODE = "id_mode";
+
 
 namespace VirtualCamera
 {

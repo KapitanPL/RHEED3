@@ -45,7 +45,7 @@ private:
 
 	I_PMS_V01 m_iMainInterface;
 	S_Version m_sMinRequired;
-	std::string m_sName = u8"CORE";
+	const std::string m_sName = u8"CORE";
 
 	static rheedCore* pThis;
 };

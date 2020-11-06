@@ -10,6 +10,18 @@
 #include <stack>
 #include <filesystem>
 
+const char* sTab = u8"\t";
+const char* sLevelBegin = u8"{";
+const char* sLevelEnd = u8"}";
+const char* sNewLine = u8"\n";
+
+void fNewLine(std::fstream* file, int8_t iLevel)
+{
+	*file << sNewLine;
+	for (int8_t i = 0; i < iLevel; i++)
+		*file << sTab;
+};
+
 const wchar_t* G_utf8towcs(const char* str)
 {
 	if (str == nullptr)
@@ -36,8 +48,10 @@ eRes InitVariant(S_variant& var, DataEnumType::eDataType eType, uint32_t uiCount
 {
 	if (uiCount > 0)
 	{
+		var.uiRefCount = 1;
 		var.sName = sName;
 		var.eType = eType;
+
 		switch (eType)
 		{
 		case DataEnumType::eInt8:
@@ -136,6 +150,8 @@ eRes InitVariant(S_variant& var, DataEnumType::eDataType eType, uint32_t uiCount
 					pD->pData = NULL;
 					pD->sName = NULL;
 					pD->uiCount = 0;
+					pD->uiAllocCount = 0;
+					pD->uiRefCount = 1;
 					pD++;
 				}
 			}
@@ -147,6 +163,7 @@ eRes InitVariant(S_variant& var, DataEnumType::eDataType eType, uint32_t uiCount
 		if (var.pData)
 		{
 			var.uiCount = uiCount;
+			var.uiAllocCount = uiCount;
 		}
 		return eOK;
 	}
@@ -155,23 +172,72 @@ eRes InitVariant(S_variant& var, DataEnumType::eDataType eType, uint32_t uiCount
 		var.sName = sName;
 		var.eType = eType;
 		var.uiCount = 0;
+		var.uiAllocCount = 0;
+		var.uiRefCount = 1;
 		var.pData = NULL;
 		return eOK;
 	}
 }
 
+eRes InitStringVariant(S_variant& var, const char* sName,const char* sString)
+{
+	eRes res = eOK;
+
+	if (sName && sString && strlen(sString) < STRING_SAFETY_LENGTH)
+	{
+		if (strlen(sString) < STRING_SAFETY_LENGTH)
+		{
+			uint32_t uiLen = (uint32_t)strlen(sString);
+			InitVariant(var, DataEnumType::eChar, uiLen + 1, sName, false);
+			strncpy_s((char*)var.pData, uiLen+1, sString, (size_t)uiLen + 1);
+			return eOK;
+		}
+		else
+			res = eERR_SIZE;
+	}
+
+	return res;
+}
+
+eRes ReAllocVariant(S_variant& var, uint32_t uiCount)
+{
+	return eRes();
+}
+
 eRes ReleaseVariant(S_variant& var)
 {
-	if (var.eType > DataEnumType::eUnknown && var.eType < DataEnumType::eVariant && var.pData)
+	if (var.uiRefCount > 0)
+		var.uiRefCount--;
+	if (var.uiRefCount == 0)
 	{
-		free(var.pData);
-		var.pData = 0;
-		var.eType = DataEnumType::eUnknown;
-		var.uiCount = 0;
-		var.sName = 0;
-		return eOK;
+		if (var.eType > DataEnumType::eUnknown&& var.eType < DataEnumType::eVariant && var.pData)
+		{
+			free(var.pData);
+			var.pData = 0;
+			var.eType = DataEnumType::eUnknown;
+			var.uiCount = 0;
+			var.sName = 0;
+			return eOK;
+		}
+		if (var.eType & DataEnumType::eVariant)
+		{
+			S_variant* pSubVariant = (S_variant*)var.pData;
+			eRes res = eOK;
+			for (uint32_t ui = 0; ui < var.uiCount; ui++, pSubVariant++)
+			{
+				res = ReleaseVariant(*pSubVariant);
+				if (res != eOK)
+					return res;
+			}
+			free(var.pData);
+			var.pData = 0;
+			var.eType = DataEnumType::eUnknown;
+			var.uiCount = 0;
+			var.sName = 0;
+			return eOK;
+		}
 	}
-	else if (var.eType & DataEnumType::eVariant)
+	if (var.eType & DataEnumType::eVariant)
 	{
 		S_variant* pSubVariant = (S_variant*)var.pData;
 		eRes res = eOK;
@@ -181,81 +247,68 @@ eRes ReleaseVariant(S_variant& var)
 			if (res != eOK)
 				return res;
 		}
-		free(var.pData);
-		var.pData = 0;
-		var.eType = DataEnumType::eUnknown;
-		var.uiCount = 0;
-		var.sName = 0;
-		return eOK;
+		if (var.uiRefCount == 0)
+		{
+			free(var.pData);
+			var.pData = 0;
+			var.eType = DataEnumType::eUnknown;
+			var.uiCount = 0;
+			var.sName = 0;
+			return eOK;
+		}
 	}
 	return eOK;
 }
 
+eRes AddRefVariant(S_variant& var)
+{
+	return WalkVariant(var, [](S_variantMeta& varMeta, void* callbackParam) {if (varMeta.pVar) varMeta.pVar->uiRefCount++; return eOK; }, nullptr);
+}
+
+eRes AppendVariant(S_variant& trunk, S_variant& branch)
+{
+	return eOK;
+}
+
+eRes AppendVariantValue(S_variant& trunk, S_variant& branch)
+{
+	if (trunk.eType != branch.eType)
+		return eERR_NOT_IMPLEMENTED;
+	if (trunk.uiAllocCount < trunk.uiCount + branch.uiCount)
+		if (ReAllocVariant(trunk, trunk.uiCount + branch.uiCount) != eOK)
+			return eERR_MEMORY;
+	size_t size = VariantDataSize(branch);
+	size_t trunkSize = VariantDataSize(trunk);
+	if (size 
+		&& memcpy_s((void*)(static_cast<uint8_t*>(trunk.pData) + VariantDataSize(trunk)), (trunkSize / trunk.uiCount) * trunk.uiAllocCount - trunkSize, branch.pData, size) == 0)
+	{
+		return eOK;
+	}
+	return eERR_MEMORY;
+}
+
 eRes CopyVariant(S_variant& dst, S_variant& src)
 {
-	ReleaseVariant(dst);
+	if (dst.pData != nullptr || dst.uiAllocCount != 0 || dst.uiCount != 0 || dst.uiRefCount != 1)
+		return eERR_ALREADYINUSE;
 	InitVariant(dst, src.eType, src.uiCount, src.sName, false);
 
 	switch (src.eType)
 	{
 	case DataEnumType::eInt8:
-	{
-		memcpy(dst.pData, src.pData, src.uiCount * sizeof(int8_t));
-		break;
-	}
 	case DataEnumType::eUInt8:
-	{
-		memcpy(dst.pData, src.pData, src.uiCount * sizeof(uint8_t));
-		break;
-	}
 	case DataEnumType::eInt16:
-	{
-		memcpy(dst.pData, src.pData, src.uiCount * sizeof(int16_t));
-		break;
-	}
 	case DataEnumType::eUInt16:
-	{
-		memcpy(dst.pData, src.pData, src.uiCount * sizeof(uint16_t));
-		break;
-	}
 	case DataEnumType::eInt32:
-	{
-		memcpy(dst.pData, src.pData, src.uiCount * sizeof(int32_t));
-		break;
-	}
 	case DataEnumType::eUInt32:
-	{
-		memcpy(dst.pData, src.pData, src.uiCount * sizeof(uint32_t));
-		break;
-	}
 	case DataEnumType::eInt64:
-	{
-		memcpy(dst.pData, src.pData, src.uiCount * sizeof(int64_t));
-		break;
-	}
 	case DataEnumType::eUInt64:
-	{
-		memcpy(dst.pData, src.pData, src.uiCount * sizeof(uint64_t));
-		break;
-	}
 	case DataEnumType::eFloat:
-	{
-		memcpy(dst.pData, src.pData, src.uiCount * sizeof(float));
-		break;
-	}
 	case DataEnumType::eDouble:
-	{
-		memcpy(dst.pData, src.pData, src.uiCount * sizeof(double));
-		break;
-	}
 	case DataEnumType::eChar:
-	{
-		memcpy(dst.pData, src.pData, src.uiCount * sizeof(char));
-		break;
-	}
 	case DataEnumType::eByte:
 	{
-		memcpy(dst.pData, src.pData, src.uiCount * sizeof(unsigned char));
+		memcpy(dst.pData, src.pData, VariantDataSize(src));
 		break;
 	}
 	case DataEnumType::eVariant:
@@ -295,7 +348,7 @@ eRes WalkVariant(S_variant& var, eRes(*callback)(S_variantMeta &varMeta, void* c
 			for (uint32_t ui = 0; ui < meta.pVar->uiCount; ui++)
 			{
 				S_variantMeta vmSub;
-				vmSub.iLevel = meta.iLevel++;
+				vmSub.iLevel = meta.iLevel+1;
 				vmSub.pVar = &pSub[ui];
 				stack.push(vmSub);
 			}
@@ -390,14 +443,49 @@ eRes SaveVariantToTextFile(const char* sFileName, S_variant& var, bool bForceRaw
 	if (sFileName && !F_FileExists(sFileName))
 	{
 		S_writeVariantContext context;
-		context.target.open(sFileName, std::ios::out | std::ios::binary | std::ios::in | std::ios::trunc);
+		context.target.open(sFileName, std::ios::out | std::ios::in | std::ios::trunc);
+		unsigned char smarker[4];
+		smarker[0] = 0xEF;
+		smarker[1] = 0xBB;
+		smarker[2] = 0xBF;
+		smarker[3] = 0x00;
+
+		context.target << smarker;
+		context.startPos = context.target.tellg();
 		context.iLastLevel = 0;
 
-		context.target << u8"#PMSVariantFile Štìpán Test" << u8"\n";
+		eRes res = WalkVariant(var, &WriteVariantToFile, &context);
 
-		return WalkVariant(var, &WriteVariantToFile, &context);
+		S_variantMeta meta;
+		meta.pVar = nullptr;
+		meta.iLevel = 0;
+		WriteVariantToFile(meta, &context);
+
+		context.target.close();
+		if (res != eOK)
+			return res;
 	}
 	return eOK;
+}
+
+
+
+eRes LoadVariantFromTextFile(const char* sFileName, S_variant& var, bool bAppend)
+{
+	eRes res = eOK;
+	if (sFileName && F_FileExists(sFileName))
+	{
+		S_writeVariantContext context;
+		context.target.open(sFileName, std::ios::in | std::ios::trunc);
+
+		if (context.target.is_open())
+		{
+			
+		}
+		else
+			res = eERR_FAIL;
+	}
+	return res;
 }
 
 std::streampos fileSize(const char* filePath) {
@@ -478,6 +566,7 @@ eRes SaveVariantToBinFile(const char* sFileName, S_variant& var, bool bVolatileD
 	}
 	return eERR_FAIL;
 }
+
 eRes WriteVariantToFile(S_variantMeta& varMeta, /*S_writeVariantContext&*/ void* context)
 {
 	S_writeVariantContext* pContext = static_cast<S_writeVariantContext*>(context);
@@ -513,35 +602,24 @@ eRes WriteVariantToFile(S_variantMeta& varMeta, /*S_writeVariantContext&*/ void*
 	}
 	else if (pContext->target.is_open())
 	{
-		const char* sTab = u8"\t";
-		const char* sLevelBegin = u8"{";
-		const char* sLevelEnd = u8"}";
-		const char* sNewLine = u8"\n";
-
-		std::function<void(std::fstream*, int8_t)> fNewLine = [sNewLine, sTab](std::fstream *file, int8_t iLevel)
-		{
-			*file << sNewLine;
-			for (int8_t i = 0; i < iLevel; i++)
-				*file << sTab;
-		};
-
-		for (int8_t iL = 0; iL < varMeta.iLevel - pContext->iLastLevel +1; iL++)
-		{
-			pContext->target << sLevelBegin;
-			fNewLine(&(pContext->target), pContext->iLastLevel + iL);
-		}
 		if (varMeta.pVar)
 		{
-			pContext->target << u8"Name: " << varMeta.pVar->sName;
-			fNewLine(&(pContext->target), varMeta.iLevel);
+			for (uint32_t uiL = pContext->iLastLevel; uiL > varMeta.iLevel; --uiL)
+			{
+				fNewLine(&(pContext->target), uiL-1);
+				pContext->target << sLevelEnd;
+			}
 
-			pContext->target << u8"Type: " << varMeta.pVar->eType;
-			fNewLine(&(pContext->target), varMeta.iLevel);
+			if (pContext->startPos != pContext->target.tellg())
+				fNewLine(&(pContext->target), varMeta.iLevel);
+			pContext->target << sLevelBegin << u8"\"" << varMeta.pVar->sName << u8"\": ";
+			//fNewLine(&(pContext->target), varMeta.iLevel);
 
-			pContext->target << u8"Count: " << varMeta.pVar->uiCount;
-			fNewLine(&(pContext->target), varMeta.iLevel);
+			pContext->target << varMeta.pVar->eType << u8": ";
+			//fNewLine(&(pContext->target), varMeta.iLevel);
 
-			pContext->target << u8"Data: {";
+			//pContext->target <</* varMeta.pVar->uiCount <<*/ u8":";
+			//fNewLine(&(pContext->target), varMeta.iLevel+1);
 
 			switch (varMeta.pVar->eType)
 			{
@@ -639,19 +717,44 @@ eRes WriteVariantToFile(S_variantMeta& varMeta, /*S_writeVariantContext&*/ void*
 			case DataEnumType::eChar:
 			{
 				char* p = (char*)varMeta.pVar->pData;
-				pContext->target << *p;
+				for (uint32_t ui = 0; ui < varMeta.pVar->uiCount-1; ui++, p++)
+				{
+					pContext->target << *p;
+				}
 				break;
 			}
 			}
-			pContext->target << u8"}";
 
+			if (varMeta.pVar->eType != DataEnumType::eVariant)
+				pContext->target << sLevelEnd;
 		}
+		else
+		{
+			for (uint32_t uiL = pContext->iLastLevel; uiL > varMeta.iLevel; --uiL)
+			{
+				fNewLine(&(pContext->target), uiL - 1);
+				pContext->target << sLevelEnd;
+			}
+		}
+		pContext->iLastLevel = varMeta.iLevel;
 	}
 	else
 	{
 	return eERR_NOT_IMPLEMENTED;
 	}
 	return eOK;
+}
+
+eRes UseVariantValueDirect_C(S_variant* pVar, eRes(*fCall)(void*, uint32_t, DataEnumType::eDataType, void*), void* pCallParam)
+{
+	eRes res = eERR_FAIL;
+	if (fCall && pVar)
+	{
+		AddRefVariant(*pVar);
+		res = fCall(pVar->pData, pVar->uiCount, pVar->eType, pCallParam);
+		ReleaseVariant(*pVar);
+	}
+	return res;
 }
 
 
@@ -668,6 +771,17 @@ bool F_FileExists(const char* sName)
 	else
 		return false;
 #endif
+}
+eRes UseVariantValueDirect(S_variant* pVar, std::function<eRes(void*, uint32_t, DataEnumType::eDataType, void*)> fCall, void* pCallParam)
+{
+	eRes res = eERR_FAIL;
+	if (fCall && pVar)
+	{
+		AddRefVariant(*pVar);
+		res = fCall(pVar->pData, pVar->uiCount, pVar->eType, pCallParam);
+		ReleaseVariant(*pVar);
+	}
+	return res;
 }
 /*
 C_variant::C_variant(S_variant* pVar)
